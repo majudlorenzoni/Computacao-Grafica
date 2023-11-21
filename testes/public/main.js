@@ -1,47 +1,74 @@
+const canvas = document.querySelector('canvas');
+const gl = canvas.getContext('webgl');
 
-const canvas = document.querySelector('canvas');        //elemento usado para desenhar os gráficos
-const gl = canvas.getContext('webgl');  //obtem o contexto do webgl
-
-if (!gl){
-    throw new Error ('WebGL not supported');
+if (!gl) {
+    throw new Error('WebGL not supported');
 }
-console.log("funcionando");
+console.log('Funcionando');
 
 const vertexData = [
-    0, 1, 0,            //(x, y, z)S
+    0, 1, 0,
     1, -1, 0,
     -1, -1, 0,
-]; //define os vertices do triangulo
+];
 
-const buffer = gl.createBuffer();           //criando um buffer de vértices
-gl.bindBuffer(gl.ARRAY_BUFFER, buffer);     //liga o buffer ao array_buffer para armazenar os dados do vertice
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.STATIC_DRAW); //carrega os dados dos vértices no buffer como um array de valores de ponto flutuante.
+const colorData = [
+    1, 0, 0,
+    0, 1, 0,
+    0, 0, 1,
+];
 
-const vertexShader = gl.createShader(gl.VERTEX_SHADER); // mini programa que roda na gpu, cria o shader de vértice
-gl.shaderSource(vertexShader, `
+const positionBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.STATIC_DRAW);
+
+const colorBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorData), gl.STATIC_DRAW);
+
+const vertexShaderSource = `
+precision mediump float;
 attribute vec3 position;
-void main(){
+attribute vec3 color;
+varying vec3 vColor;
+
+void main() {
+    vColor = color;
     gl_Position = vec4(position, 1);
 }
-`); //define o código do shader de vértice que calcula a posição dos vértices
+`;
+
+const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+gl.shaderSource(vertexShader, vertexShaderSource);
 gl.compileShader(vertexShader);
 
-const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-gl.shaderSource(fragmentShader, `
-void main(){
-    gl_FragColor = vec4(0, 1, 1, 1);
+const fragmentShaderSource = `
+precision mediump float;
+varying vec3 vColor;
+
+void main() {
+    gl_FragColor = vec4(vColor, 1);
 }
-`); //define a cor do fragmento
+`;
+
+const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+gl.shaderSource(fragmentShader, fragmentShaderSource);
 gl.compileShader(fragmentShader);
 
 const program = gl.createProgram();
 gl.attachShader(program, vertexShader);
-gl.attachShader(program, fragmentShader); // anexa os vertices e os pixeis ao programa
-gl.linkProgram(program); //cria o executavel
+gl.attachShader(program, fragmentShader);
+gl.linkProgram(program);
+gl.useProgram(program);
 
-const positionLocation = gl.getAttribLocation(program, `position`);
+const positionLocation = gl.getAttribLocation(program, 'position');
 gl.enableVertexAttribArray(positionLocation);
+gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
 
-gl.useProgram(program); //ativa o programa
-gl.drawArrays(gl.TRIANGLES, 0, 3);  //renderiza o triangulo definido pelos vertices
+const colorLocation = gl.getAttribLocation(program, 'color');
+gl.enableVertexAttribArray(colorLocation);
+gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+gl.vertexAttribPointer(colorLocation, 3, gl.FLOAT, false, 0, 0);
+
+gl.drawArrays(gl.TRIANGLES, 0, 3);
