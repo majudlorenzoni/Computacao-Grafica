@@ -1,5 +1,6 @@
 Repositório criado para a disciplina de Computação Gráfica na UFPel.
 
+<<<<<<< HEAD
 Na pasta **triangulo** encontra-se um exercício de um triângulo multicolorido.
 
 Na pasta **textura** encontra-se exercícios para aprender a aplicação de textura.
@@ -18,3 +19,6 @@ COMO USAR
 
 6° - Navegue até o diretório do seu projeto onde está o index.html e execute: http-server
 
+=======
+Na pasta **testes** encontram-se exercícios sobre WebGL.
+>>>>>>> c4262c0f5e29ec8cbbf42671b22d3aa680f0d464
