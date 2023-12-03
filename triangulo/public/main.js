@@ -4,7 +4,7 @@ const gl = canvas.getContext('webgl');
 if (!gl) {
     throw new Error('WebGL not supported');
 }
-console.log('Funcionando');
+
 
 const vertexData = [
     0, 1, 0,
@@ -34,7 +34,7 @@ varying vec3 vColor;
 
 void main() {
     vColor = color;
-    gl_Position = vec4(position, 1);
+    gl_Position = vec4(position, 1);    //x = position, y = 1, z = 0
 }
 `;
 
@@ -47,7 +47,7 @@ precision mediump float;
 varying vec3 vColor;
 
 void main() {
-    gl_FragColor = vec4(vColor, 1);
+    gl_FragColor = vec4(vColor, 1);    //x = vColor, y = 1, z = 0
 }
 `;
 
