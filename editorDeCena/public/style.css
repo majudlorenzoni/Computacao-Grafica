@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
+
+body {
+    font-family: 'MedievalSharp', cursive;
+    color: #21025c;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f0e8ff;
+    font-size: 13px;
+    margin-left: 30px;
+}
+
+header {
+    font-size: 18px;
+}
+
+main {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    align-items: center; /* Centralizar itens no eixo transversal (horizontal) */
+    justify-content: center; /* Centralizar itens no eixo principal (vertical) */
+}
+
+#left_menu {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+#left_menu .model_selection,
+#left_menu .transformation_editing {
+    height: 300px;
+    width: 250px;
+    margin-left: 10px;
+    margin-bottom: 5px;
+    border: #21025c solid 2px;
+    border-radius: 15px;
+}
+
+.menu_center {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.menu_center .scene,
+.menu_center .models {
+    padding: 5px;
+    margin-left: 10px;
+    margin-bottom: 5px;
+    border: #21025c solid 2px;
+    border-radius: 15px;
+}
+
+.menu_center .scene {
+    height: 600px;
+    width: 500px;
+}
+
+.menu_center .models {
+    height: 600px;
+    width: 250px;
+}
+
+footer {
+    font-size: 15px;
+    margin-left: 0px;
+    color: beige;
+    background-color: #21025c;
+}
+
+a {
+    color: beige;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
