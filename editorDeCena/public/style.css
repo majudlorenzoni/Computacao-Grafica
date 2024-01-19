@@ -23,6 +23,9 @@ main {
     align-items: center; /* Centralizar itens no eixo transversal (horizontal) */
     justify-content: center; /* Centralizar itens no eixo principal (vertical) */
 }
+canvas {
+    display: block;
+}
 
 #left_menu {
     display: flex;
@@ -53,6 +56,7 @@ main {
     margin-bottom: 5px;
     border: #21025c solid 2px;
     border-radius: 15px;
+    background-color: rgb(255, 255, 255);
 }
 
 .menu_center .scene {
