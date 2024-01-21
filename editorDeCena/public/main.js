@@ -1,11 +1,13 @@
+"use strict";
+
+// Recebe o conteúdo de um arquivo .obj e retorna um objeto com as informações sobre a geometria, materiais
 function parseOBJ(text) {
-  // because indices are base 1 let's just fill in the 0th data
-  const objPositions = [[0, 0, 0]];
+  const objPositions = [[0, 0, 0]]; 
   const objTexcoords = [[0, 0]];
   const objNormals = [[0, 0, 0]];
   const objColors = [[0, 0, 0]];
 
-  // same order as `f` indices
+ //Array retorna os dados do objetos
   const objVertexData = [
     objPositions,
     objTexcoords,
@@ -13,7 +15,7 @@ function parseOBJ(text) {
     objColors,
   ];
 
-  // same order as `f` indices
+  // arrays para armazenar os dados convertidos pro webgl
   let webglVertexData = [
     [],   // positions
     [],   // texcoords
@@ -21,23 +23,23 @@ function parseOBJ(text) {
     [],   // colors
   ];
 
-  const materialLibs = [];
-  const geometries = [];
-  let geometry;
-  let groups = ['default'];
-  let material = 'default';
-  let object = 'default';
+  const materialLibs = [];    // lista de arquivos .mtl a serem carregados
+  const geometries = [];      // lista de geometrias
+  let geometry;               // verifica se a geometria já existe
+  let groups = ['default'];   // verifica se o grupo já existe
+  let material = 'default';   // verifica se o material já existe
+  let object = 'default';     // verifica se o objeto já existe
 
-  const noop = () => {};
+  const noop = () => {};      // função vazia
 
   function newGeometry() {
-    // If there is an existing geometry and it's
-    // not empty then start a new one.
+    // cria uma nova geometria se a geometria atual não estiver vazia
     if (geometry && geometry.data.position.length) {
       geometry = undefined;
     }
   }
 
+  // define a geometria atual se não existir.
   function setGeometry() {
     if (!geometry) {
       const position = [];
@@ -65,6 +67,7 @@ function parseOBJ(text) {
     }
   }
 
+  // adiciona um vértice aos arrays WebGL convertidos.
   function addVertex(vert) {
     const ptn = vert.split('/');
     ptn.forEach((objIndexStr, i) => {
@@ -74,32 +77,31 @@ function parseOBJ(text) {
       const objIndex = parseInt(objIndexStr);
       const index = objIndex + (objIndex >= 0 ? 0 : objVertexData[i].length);
       webglVertexData[i].push(...objVertexData[i][index]);
-      // if this is the position index (index 0) and we parsed
-      // vertex colors then copy the vertex colors to the webgl vertex color data
+      // se este é o índice da posição (índice 0) e já analisamos
+      // as cores dos vértices, então copie as cores dos vértices para os dados de cor do vértice WebGL
       if (i === 0 && objColors.length > 1) {
         geometry.data.color.push(...objColors[index]);
       }
     });
   }
 
+  // conjunto de palavras-chave que podem ser encontradas em um arquivo .obj
   const keywords = {
-    v(parts) {
-      // if there are more than 3 values here they are vertex colors
-      if (parts.length > 3) {
+    v(parts) { // v = vértice
+      if (parts.length > 3) { //há cores
         objPositions.push(parts.slice(0, 3).map(parseFloat));
         objColors.push(parts.slice(3).map(parseFloat));
       } else {
         objPositions.push(parts.map(parseFloat));
       }
     },
-    vn(parts) {
+    vn(parts) { // vn = normal
       objNormals.push(parts.map(parseFloat));
     },
-    vt(parts) {
-      // should check for missing v and extra w?
+    vt(parts) { // vt = coordenadas de textura
       objTexcoords.push(parts.map(parseFloat));
     },
-    f(parts) {
+    f(parts) { // f = face
       setGeometry();
       const numTriangles = parts.length - 2;
       for (let tri = 0; tri < numTriangles; ++tri) {
@@ -108,34 +110,32 @@ function parseOBJ(text) {
         addVertex(parts[tri + 2]);
       }
     },
-    s: noop,    // smoothing group
-    mtllib(parts, unparsedArgs) {
-      // the spec says there can be multiple filenames here
-      // but many exist with spaces in a single filename
-      materialLibs.push(unparsedArgs);
+    s: noop,    // s = suavização
+    mtllib(parts) { // inclusão de arquivos de material
+      materialLibs.push(parts.join(' '));
     },
-    usemtl(parts, unparsedArgs) {
+    usemtl(parts, unparsedArgs) { // uso de material
       material = unparsedArgs;
       newGeometry();
     },
-    g(parts) {
+    g(parts) { // g = grupo
       groups = parts;
       newGeometry();
     },
-    o(parts, unparsedArgs) {
+    o(parts, unparsedArgs) { // o = objeto
       object = unparsedArgs;
       newGeometry();
     },
   };
 
-  const keywordRE = /(\w*)(?: )*(.*)/;
-  const lines = text.split('\n');
-  for (let lineNo = 0; lineNo < lines.length; ++lineNo) {
-    const line = lines[lineNo].trim();
+  const keywordRE = /(\w*)(?: )*(.*)/;  // expressão regular para analisar cada linha
+  const lines = text.split('\n');      // divide o texto em linhas
+  for (let lineNo = 0; lineNo < lines.length; ++lineNo) {  
+    const line = lines[lineNo].trim(); // remove espaços em branco
     if (line === '' || line.startsWith('#')) {
       continue;
     }
-    const m = keywordRE.exec(line);
+    const m = keywordRE.exec(line); // executa a expressão regular para extrair a palavra-chave e os argumentos
     if (!m) {
       continue;
     }
@@ -213,21 +213,83 @@ function parseMTL(text) {
   return materials;
 }
 
+function makeIndexIterator(indices) {
+  // cria um iterador para percorrermos os índices de um conjunto de vértices
+  let ndx = 0;
+  const fn = () => indices[ndx++];
+  fn.reset = () => { ndx = 0; };
+  fn.numElements = indices.length;
+  return fn;
+}
+
+function makeUnindexedIterator(positions) {
+  // iterador para um conjunto de vertices não indexados
+  let ndx = 0;
+  const fn = () => ndx++;
+  fn.reset = () => { ndx = 0; };
+  fn.numElements = positions.length / 3;
+  return fn;
+}
+
+//subtrai valores dois vetores 2D
+const subtractVector2 = (a, b) => a.map((v, ndx) => v - b[ndx]);
+
+// gera tangentes
+function generateTangents(position, texcoord, indices) {
+  const getNextIndex = indices ? makeIndexIterator(indices) : makeUnindexedIterator(position);
+  const numFaceVerts = getNextIndex.numElements;
+  const numFaces = numFaceVerts / 3;
+
+  const tangents = [];
+  for (let i = 0; i < numFaces; ++i) {
+    const n1 = getNextIndex();
+    const n2 = getNextIndex();
+    const n3 = getNextIndex();
+
+    const p1 = position.slice(n1 * 3, n1 * 3 + 3);
+    const p2 = position.slice(n2 * 3, n2 * 3 + 3);
+    const p3 = position.slice(n3 * 3, n3 * 3 + 3);
+
+    const uv1 = texcoord.slice(n1 * 2, n1 * 2 + 2);
+    const uv2 = texcoord.slice(n2 * 2, n2 * 2 + 2);
+    const uv3 = texcoord.slice(n3 * 2, n3 * 2 + 2);
+
+    const dp12 = m4.subtractVectors(p2, p1);
+    const dp13 = m4.subtractVectors(p3, p1);
+
+    const duv12 = subtractVector2(uv2, uv1);
+    const duv13 = subtractVector2(uv3, uv1);
+
+
+    const f = 1.0 / (duv12[0] * duv13[1] - duv13[0] * duv12[1]);
+    const tangent = Number.isFinite(f)
+      ? m4.normalize(m4.scaleVector(m4.subtractVectors(
+          m4.scaleVector(dp12, duv13[1]),
+          m4.scaleVector(dp13, duv12[1]),
+        ), f))
+      : [1, 0, 0];
+
+    tangents.push(...tangent, ...tangent, ...tangent);
+  }
+
+  return tangents;
+}
+
 async function main() {
-  // Get A WebGL context
-  /** @type {HTMLCanvasElement} */
   const canvas = document.querySelector("#canvas");
   const gl = canvas.getContext("webgl2");
   if (!gl) {
     return;
   }
 
-  // Tell the twgl to match position with a_position etc..
+  // define um prefixo para os atributos de shader usando a biblioteca twgl
   twgl.setAttributePrefix("a_");
 
+  // vertex shader
   const vs = `#version 300 es
   in vec4 a_position;
   in vec3 a_normal;
+  in vec3 a_tangent;
   in vec2 a_texcoord;
   in vec4 a_color;
 
@@ -237,6 +299,7 @@ async function main() {
   uniform vec3 u_viewWorldPosition;
 
   out vec3 v_normal;
+  out vec3 v_tangent;
   out vec3 v_surfaceToView;
   out vec2 v_texcoord;
   out vec4 v_color;
@@ -245,16 +308,22 @@ async function main() {
     vec4 worldPosition = u_world * a_position;
     gl_Position = u_projection * u_view * worldPosition;
     v_surfaceToView = u_viewWorldPosition - worldPosition.xyz;
-    v_normal = mat3(u_world) * a_normal;
+
+    mat3 normalMat = mat3(u_world);
+    v_normal = normalize(normalMat * a_normal);
+    v_tangent = normalize(normalMat * a_tangent);
+
     v_texcoord = a_texcoord;
     v_color = a_color;
   }
   `;
 
+  // fragment shader
   const fs = `#version 300 es
   precision highp float;
 
   in vec3 v_normal;
+  in vec3 v_tangent;
   in vec3 v_surfaceToView;
   in vec2 v_texcoord;
   in vec4 v_color;
@@ -264,7 +333,9 @@ async function main() {
   uniform vec3 ambient;
   uniform vec3 emissive;
   uniform vec3 specular;
+  uniform sampler2D specularMap;
   uniform float shininess;
+  uniform sampler2D normalMap;
   uniform float opacity;
   uniform vec3 u_lightDirection;
   uniform vec3 u_ambientLight;
@@ -272,13 +343,21 @@ async function main() {
   out vec4 outColor;
 
   void main () {
-    vec3 normal = normalize(v_normal);
+    vec3 normal = normalize(v_normal) * ( float( gl_FrontFacing ) * 2.0 - 1.0 );
+    vec3 tangent = normalize(v_tangent) * ( float( gl_FrontFacing ) * 2.0 - 1.0 );
+    vec3 bitangent = normalize(cross(normal, tangent));
+
+    mat3 tbn = mat3(tangent, bitangent, normal);
+    normal = texture(normalMap, v_texcoord).rgb * 2. - 1.;
+    normal = normalize(tbn * normal);
 
     vec3 surfaceToViewDirection = normalize(v_surfaceToView);
     vec3 halfVector = normalize(u_lightDirection + surfaceToViewDirection);
 
     float fakeLight = dot(u_lightDirection, normal) * .5 + .5;
     float specularLight = clamp(dot(normal, halfVector), 0.0, 1.0);
+    vec4 specularMapColor = texture(specularMap, v_texcoord);
+    vec3 effectiveSpecular = specular * specularMapColor.rgb;
 
     vec4 diffuseMapColor = texture(diffuseMap, v_texcoord);
     vec3 effectiveDiffuse = diffuse * diffuseMapColor.rgb * v_color.rgb;
@@ -288,16 +367,17 @@ async function main() {
         emissive +
         ambient * u_ambientLight +
         effectiveDiffuse * fakeLight +
-        specular * pow(specularLight, shininess),
+        effectiveSpecular * pow(specularLight, shininess),
         effectiveOpacity);
   }
   `;
 
 
-  // compiles and links the shaders, looks up attribute and uniform locations
+  // compila os shaders usando a biblioteca twgl e cria um programa
   const meshProgramInfo = twgl.createProgramInfo(gl, [vs, fs]);
-
-  const objHref = 'https://webgl2fundamentals.org/webgl/resources/models/windmill/windmill.obj';  
+  
+  // carrega o arquivo .obj e o arquivo .mtl
+  const objHref = "/assets/obj/table_long_decorated_A.obj";  
   const response = await fetch(objHref);
   const text = await response.text();
   const obj = parseOBJ(text);
@@ -309,17 +389,20 @@ async function main() {
   }));
   const materials = parseMTL(matTexts.join('\n'));
 
+  // cria texturas padrão
   const textures = {
     defaultWhite: twgl.createTexture(gl, {src: [255, 255, 255, 255]}),
+    defaultNormal: twgl.createTexture(gl, {src: [127, 127, 255, 0]}),
   };
 
-  // load texture for materials
+  // carrega as texturas dos materiais
   for (const material of Object.values(materials)) {
     Object.entries(material)
       .filter(([key]) => key.endsWith('Map'))
       .forEach(([key, filename]) => {
         let texture = textures[filename];
         if (!texture) {
+          
           const textureHref = new URL(filename, baseHref).href;
           texture = twgl.createTexture(gl, {src: textureHref, flipY: true});
           textures[filename] = texture;
@@ -328,41 +411,47 @@ async function main() {
       });
   }
 
+  // configura de materiais e geometria
+  Object.values(materials).forEach(m => {
+    m.shininess = 25;
+    m.specular = [3, 2, 1];
+  });
+
   const defaultMaterial = {
     diffuse: [1, 1, 1],
     diffuseMap: textures.defaultWhite,
+    normalMap: textures.defaultNormal,
     ambient: [0, 0, 0],
     specular: [1, 1, 1],
+    specularMap: textures.defaultWhite,
     shininess: 400,
     opacity: 1,
   };
 
   const parts = obj.geometries.map(({material, data}) => {
-    // Because data is just named arrays like this
-    //
-    // {
-    //   position: [...],
-    //   texcoord: [...],
-    //   normal: [...],
-    // }
-    //
-    // and because those names match the attributes in our vertex
-    // shader we can pass it directly into `createBufferInfoFromArrays`
-    // from the article "less code more fun".
-
     if (data.color) {
       if (data.position.length === data.color.length) {
-        // it's 3. The our helper library assumes 4 so we need
-        // to tell it there are only 3.
         data.color = { numComponents: 3, data: data.color };
       }
     } else {
-      // there are no vertex colors so just use constant white
       data.color = { value: [1, 1, 1, 1] };
     }
 
-    // create a buffer for each array by calling
-    // gl.createBuffer, gl.bindBuffer, gl.bufferData
+    if (data.texcoord && data.normal) {
+      data.tangent = generateTangents(data.position, data.texcoord);
+    } else {
+      data.tangent = { value: [1, 0, 0] };
+    }
+
+    if (!data.texcoord) {
+      data.texcoord = { value: [0, 0] };
+    }
+
+    if (!data.normal) {
+      data.normal = { value: [0, 0, 1] };
+    }
+
+    // cria um buffer com os dados da geometria para renderização
     const bufferInfo = twgl.createBufferInfoFromArrays(gl, data);
     const vao = twgl.createVAOFromBufferInfo(gl, meshProgramInfo, bufferInfo);
     return {
@@ -401,25 +490,27 @@ async function main() {
     });
   }
 
+  // calcula o tamanho do objeto
   const extents = getGeometriesExtents(obj.geometries);
   const range = m4.subtractVectors(extents.max, extents.min);
-  // amount to move the object so its center is at the origin
+  // Quantidade para mover o objeto para que seu centro esteja na origem
   const objOffset = m4.scaleVector(
       m4.addVectors(
         extents.min,
         m4.scaleVector(range, 0.5)),
       -1);
   const cameraTarget = [0, 0, 0];
-  // figure out how far away to move the camera so we can likely
-  // see the object.
-  const radius = m4.length(range) * 1.2;
+  // Descobre a distância para mover a câmera para que provavelmente
+  // possamos ver o objeto.
+  const radius = m4.length(range) * 1.05;   // 1.5
   const cameraPosition = m4.addVectors(cameraTarget, [
     0,
     0,
     radius,
   ]);
-  // Set zNear and zFar to something hopefully appropriate
-  // for the size of this object.
+  
+  // Define zNear e zFar para algo esperançosamente apropriado
+  // para o tamanho deste objeto.
   const zNear = radius / 100;
   const zFar = radius * 3;
 
@@ -428,7 +519,7 @@ async function main() {
   }
 
   function render(time) {
-    time *= 0.001;  // convert to seconds
+    time *= 0.001;  // converte para segundos
 
     twgl.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -439,10 +530,10 @@ async function main() {
     const projection = m4.perspective(fieldOfViewRadians, aspect, zNear, zFar);
 
     const up = [0, 1, 0];
-    // Compute the camera's matrix using look at.
+    // Calcula a matriz da câmera usando look at.
     const camera = m4.lookAt(cameraPosition, cameraTarget, up);
 
-    // Make a view matrix from the camera matrix.
+    // Cria uma matriz de visão a partir da matriz da câmera.
     const view = m4.inverse(camera);
 
     const sharedUniforms = {
@@ -452,24 +543,23 @@ async function main() {
       u_viewWorldPosition: cameraPosition,
     };
 
+    // Seleciona o programa de shader e define os uniformes compartilhados
     gl.useProgram(meshProgramInfo.program);
-
-    // calls gl.uniform
     twgl.setUniforms(meshProgramInfo, sharedUniforms);
 
-    // compute the world matrix once since all parts
-    // are at the same space.
+    // Calcula a matriz de mundo uma vez, pois todas as partes compartilham o mesmo espaço
     let u_world = m4.yRotation(time);
     u_world = m4.translate(u_world, ...objOffset);
-
+  
+    // Renderiza cada parte do modelo
     for (const {bufferInfo, vao, material} of parts) {
-      // set the attributes for this part.
+       // Define os atributos para esta parte.
       gl.bindVertexArray(vao);
-      // calls gl.uniform
+      // Chama gl.uniform
       twgl.setUniforms(meshProgramInfo, {
         u_world,
       }, material);
-      // calls gl.drawArrays or gl.drawElements
+      // Chama gl.drawArrays ou gl.drawElements
       twgl.drawBufferInfo(gl, bufferInfo);
     }
 
@@ -479,5 +569,3 @@ async function main() {
 }
 
 main();
-
-   
