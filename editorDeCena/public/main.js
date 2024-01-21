@@ -2,35 +2,30 @@
 
 // Recebe o conteúdo de um arquivo .obj e retorna um objeto com as informações sobre a geometria, materiais
 function parseOBJ(text) {
-  const objPositions = [[0, 0, 0]]; 
+  const objPositions = [[0, 0, 0]];
   const objTexcoords = [[0, 0]];
   const objNormals = [[0, 0, 0]];
   const objColors = [[0, 0, 0]];
 
- //Array retorna os dados do objetos
-  const objVertexData = [
-    objPositions,
-    objTexcoords,
-    objNormals,
-    objColors,
-  ];
+  //Array retorna os dados do objetos
+  const objVertexData = [objPositions, objTexcoords, objNormals, objColors];
 
   // arrays para armazenar os dados convertidos pro webgl
   let webglVertexData = [
-    [],   // positions
-    [],   // texcoords
-    [],   // normals
-    [],   // colors
+    [], // positions
+    [], // texcoords
+    [], // normals
+    [], // colors
   ];
 
-  const materialLibs = [];    // lista de arquivos .mtl a serem carregados
-  const geometries = [];      // lista de geometrias
-  let geometry;               // verifica se a geometria já existe
-  let groups = ['default'];   // verifica se o grupo já existe
-  let material = 'default';   // verifica se o material já existe
-  let object = 'default';     // verifica se o objeto já existe
+  const materialLibs = []; // lista de arquivos .mtl a serem carregados
+  const geometries = []; // lista de geometrias
+  let geometry; // verifica se a geometria já existe
+  let groups = ["default"]; // verifica se o grupo já existe
+  let material = "default"; // verifica se o material já existe
+  let object = "default"; // verifica se o objeto já existe
 
-  const noop = () => {};      // função vazia
+  const noop = () => {}; // função vazia
 
   function newGeometry() {
     // cria uma nova geometria se a geometria atual não estiver vazia
@@ -46,12 +41,7 @@ function parseOBJ(text) {
       const texcoord = [];
       const normal = [];
       const color = [];
-      webglVertexData = [
-        position,
-        texcoord,
-        normal,
-        color,
-      ];
+      webglVertexData = [position, texcoord, normal, color];
       geometry = {
         object,
         groups,
@@ -69,7 +59,7 @@ function parseOBJ(text) {
 
   // adiciona um vértice aos arrays WebGL convertidos.
   function addVertex(vert) {
-    const ptn = vert.split('/');
+    const ptn = vert.split("/");
     ptn.forEach((objIndexStr, i) => {
       if (!objIndexStr) {
         return;
@@ -87,21 +77,26 @@ function parseOBJ(text) {
 
   // conjunto de palavras-chave que podem ser encontradas em um arquivo .obj
   const keywords = {
-    v(parts) { // v = vértice
-      if (parts.length > 3) { //há cores
+    v(parts) {
+      // v = vértice
+      if (parts.length > 3) {
+        //há cores
         objPositions.push(parts.slice(0, 3).map(parseFloat));
         objColors.push(parts.slice(3).map(parseFloat));
       } else {
         objPositions.push(parts.map(parseFloat));
       }
     },
-    vn(parts) { // vn = normal
+    vn(parts) {
+      // vn = normal
       objNormals.push(parts.map(parseFloat));
     },
-    vt(parts) { // vt = coordenadas de textura
+    vt(parts) {
+      // vt = coordenadas de textura
       objTexcoords.push(parts.map(parseFloat));
     },
-    f(parts) { // f = face
+    f(parts) {
+      // f = face
       setGeometry();
       const numTriangles = parts.length - 2;
       for (let tri = 0; tri < numTriangles; ++tri) {
@@ -110,29 +105,33 @@ function parseOBJ(text) {
         addVertex(parts[tri + 2]);
       }
     },
-    s: noop,    // s = suavização
-    mtllib(parts) { // inclusão de arquivos de material
-      materialLibs.push(parts.join(' '));
+    s: noop, // s = suavização
+    mtllib(parts) {
+      // inclusão de arquivos de material
+      materialLibs.push(parts.join(" "));
     },
-    usemtl(parts, unparsedArgs) { // uso de material
+    usemtl(parts, unparsedArgs) {
+      // uso de material
       material = unparsedArgs;
       newGeometry();
     },
-    g(parts) { // g = grupo
+    g(parts) {
+      // g = grupo
       groups = parts;
       newGeometry();
     },
-    o(parts, unparsedArgs) { // o = objeto
+    o(parts, unparsedArgs) {
+      // o = objeto
       object = unparsedArgs;
       newGeometry();
     },
   };
 
-  const keywordRE = /(\w*)(?: )*(.*)/;  // expressão regular para analisar cada linha
-  const lines = text.split('\n');      // divide o texto em linhas
-  for (let lineNo = 0; lineNo < lines.length; ++lineNo) {  
+  const keywordRE = /(\w*)(?: )*(.*)/; // expressão regular para analisar cada linha
+  const lines = text.split("\n"); // divide o texto em linhas
+  for (let lineNo = 0; lineNo < lines.length; ++lineNo) {
     const line = lines[lineNo].trim(); // remove espaços em branco
-    if (line === '' || line.startsWith('#')) {
+    if (line === "" || line.startsWith("#")) {
       continue;
     }
     const m = keywordRE.exec(line); // executa a expressão regular para extrair a palavra-chave e os argumentos
@@ -143,7 +142,7 @@ function parseOBJ(text) {
     const parts = line.split(/\s+/).slice(1);
     const handler = keywords[keyword];
     if (!handler) {
-      console.warn('unhandled keyword:', keyword);  // eslint-disable-line no-console
+      console.warn("unhandled keyword:", keyword); // eslint-disable-line no-console
       continue;
     }
     handler(parts, unparsedArgs);
@@ -152,7 +151,8 @@ function parseOBJ(text) {
   // remove any arrays that have no entries.
   for (const geometry of geometries) {
     geometry.data = Object.fromEntries(
-        Object.entries(geometry.data).filter(([, array]) => array.length > 0));
+      Object.entries(geometry.data).filter(([, array]) => array.length > 0)
+    );
   }
 
   return {
@@ -176,24 +176,46 @@ function parseMTL(text) {
       materials[unparsedArgs] = material;
     },
     /* eslint brace-style:0 */
-    Ns(parts)       { material.shininess      = parseFloat(parts[0]); },
-    Ka(parts)       { material.ambient        = parts.map(parseFloat); },
-    Kd(parts)       { material.diffuse        = parts.map(parseFloat); },
-    Ks(parts)       { material.specular       = parts.map(parseFloat); },
-    Ke(parts)       { material.emissive       = parts.map(parseFloat); },
-    map_Kd(parts, unparsedArgs)   { material.diffuseMap = parseMapArgs(unparsedArgs); },
-    map_Ns(parts, unparsedArgs)   { material.specularMap = parseMapArgs(unparsedArgs); },
-    map_Bump(parts, unparsedArgs) { material.normalMap = parseMapArgs(unparsedArgs); },
-    Ni(parts)       { material.opticalDensity = parseFloat(parts[0]); },
-    d(parts)        { material.opacity        = parseFloat(parts[0]); },
-    illum(parts)    { material.illum          = parseInt(parts[0]); },
+    Ns(parts) {
+      material.shininess = parseFloat(parts[0]);
+    },
+    Ka(parts) {
+      material.ambient = parts.map(parseFloat);
+    },
+    Kd(parts) {
+      material.diffuse = parts.map(parseFloat);
+    },
+    Ks(parts) {
+      material.specular = parts.map(parseFloat);
+    },
+    Ke(parts) {
+      material.emissive = parts.map(parseFloat);
+    },
+    map_Kd(parts, unparsedArgs) {
+      material.diffuseMap = parseMapArgs(unparsedArgs);
+    },
+    map_Ns(parts, unparsedArgs) {
+      material.specularMap = parseMapArgs(unparsedArgs);
+    },
+    map_Bump(parts, unparsedArgs) {
+      material.normalMap = parseMapArgs(unparsedArgs);
+    },
+    Ni(parts) {
+      material.opticalDensity = parseFloat(parts[0]);
+    },
+    d(parts) {
+      material.opacity = parseFloat(parts[0]);
+    },
+    illum(parts) {
+      material.illum = parseInt(parts[0]);
+    },
   };
 
   const keywordRE = /(\w*)(?: )*(.*)/;
-  const lines = text.split('\n');
+  const lines = text.split("\n");
   for (let lineNo = 0; lineNo < lines.length; ++lineNo) {
     const line = lines[lineNo].trim();
-    if (line === '' || line.startsWith('#')) {
+    if (line === "" || line.startsWith("#")) {
       continue;
     }
     const m = keywordRE.exec(line);
@@ -204,7 +226,7 @@ function parseMTL(text) {
     const parts = line.split(/\s+/).slice(1);
     const handler = keywords[keyword];
     if (!handler) {
-      console.warn('unhandled keyword:', keyword);  // eslint-disable-line no-console
+      console.warn("unhandled keyword:", keyword); // eslint-disable-line no-console
       continue;
     }
     handler(parts, unparsedArgs);
@@ -217,7 +239,9 @@ function makeIndexIterator(indices) {
   // cria um iterador para percorrermos os índices de um conjunto de vértices
   let ndx = 0;
   const fn = () => indices[ndx++];
-  fn.reset = () => { ndx = 0; };
+  fn.reset = () => {
+    ndx = 0;
+  };
   fn.numElements = indices.length;
   return fn;
 }
@@ -226,7 +250,9 @@ function makeUnindexedIterator(positions) {
   // iterador para um conjunto de vertices não indexados
   let ndx = 0;
   const fn = () => ndx++;
-  fn.reset = () => { ndx = 0; };
+  fn.reset = () => {
+    ndx = 0;
+  };
   fn.numElements = positions.length / 3;
   return fn;
 }
@@ -236,7 +262,9 @@ const subtractVector2 = (a, b) => a.map((v, ndx) => v - b[ndx]);
 
 // gera tangentes
 function generateTangents(position, texcoord, indices) {
-  const getNextIndex = indices ? makeIndexIterator(indices) : makeUnindexedIterator(position);
+  const getNextIndex = indices
+    ? makeIndexIterator(indices)
+    : makeUnindexedIterator(position);
   const numFaceVerts = getNextIndex.numElements;
   const numFaces = numFaceVerts / 3;
 
@@ -260,13 +288,17 @@ function generateTangents(position, texcoord, indices) {
     const duv12 = subtractVector2(uv2, uv1);
     const duv13 = subtractVector2(uv3, uv1);
 
-
     const f = 1.0 / (duv12[0] * duv13[1] - duv13[0] * duv12[1]);
     const tangent = Number.isFinite(f)
-      ? m4.normalize(m4.scaleVector(m4.subtractVectors(
-          m4.scaleVector(dp12, duv13[1]),
-          m4.scaleVector(dp13, duv12[1]),
-        ), f))
+      ? m4.normalize(
+          m4.scaleVector(
+            m4.subtractVectors(
+              m4.scaleVector(dp12, duv13[1]),
+              m4.scaleVector(dp13, duv12[1])
+            ),
+            f
+          )
+        )
       : [1, 0, 0];
 
     tangents.push(...tangent, ...tangent, ...tangent);
@@ -354,13 +386,13 @@ async function main() {
     vec3 surfaceToViewDirection = normalize(v_surfaceToView);
     vec3 halfVector = normalize(u_lightDirection + surfaceToViewDirection);
 
-    float fakeLight = dot(u_lightDirection, normal) * .5 + .5;
+    float fakeLight = dot(u_lightDirection, normal) * 0.2 + .5;
     float specularLight = clamp(dot(normal, halfVector), 0.0, 1.0);
     vec4 specularMapColor = texture(specularMap, v_texcoord);
     vec3 effectiveSpecular = specular * specularMapColor.rgb;
 
     vec4 diffuseMapColor = texture(diffuseMap, v_texcoord);
-    vec3 effectiveDiffuse = diffuse * diffuseMapColor.rgb * v_color.rgb;
+    vec3 effectiveDiffuse =  mix(diffuse * v_color.rgb, diffuseMapColor.rgb, 0.5);
     float effectiveOpacity = opacity * diffuseMapColor.a * v_color.a;
 
     outColor = vec4(
@@ -372,27 +404,28 @@ async function main() {
   }
   `;
 
-
   // compila os shaders usando a biblioteca twgl e cria um programa
   const meshProgramInfo = twgl.createProgramInfo(gl, [vs, fs]);
-  
+
   // carrega o arquivo .obj e o arquivo .mtl
-  const objHref = "/assets/obj/table_long_decorated_A.obj";  
+  const objHref = "/assets/obj/table_long_decorated_A/table_long_decorated_A.obj";
   const response = await fetch(objHref);
   const text = await response.text();
   const obj = parseOBJ(text);
   const baseHref = new URL(objHref, window.location.href);
-  const matTexts = await Promise.all(obj.materialLibs.map(async filename => {
-    const matHref = new URL(filename, baseHref).href;
-    const response = await fetch(matHref);
-    return await response.text();
-  }));
-  const materials = parseMTL(matTexts.join('\n'));
+  const matTexts = await Promise.all(
+    obj.materialLibs.map(async (filename) => {
+      const matHref = new URL(filename, baseHref).href;
+      const response = await fetch(matHref);
+      return await response.text();
+    })
+  );
+  const materials = parseMTL(matTexts.join("\n"));
 
   // cria texturas padrão
   const textures = {
-    defaultWhite: twgl.createTexture(gl, {src: [255, 255, 255, 255]}),
-    defaultNormal: twgl.createTexture(gl, {src: [127, 127, 255, 0]}),
+    defaultWhite: twgl.createTexture(gl, { src: [255, 78, 255, 255] }),
+    defaultNormal: twgl.createTexture(gl, { src: [127, 127, 255, 0] }),
   };
 
   // carrega as texturas dos materiais
@@ -402,7 +435,6 @@ async function main() {
       .forEach(([key, filename]) => {
         let texture = textures[filename];
         if (!texture) {
-          
           const textureHref = new URL(filename, baseHref).href;
           texture = twgl.createTexture(gl, {src: textureHref, flipY: true});
           textures[filename] = texture;
@@ -412,7 +444,7 @@ async function main() {
   }
 
   // configura de materiais e geometria
-  Object.values(materials).forEach(m => {
+  Object.values(materials).forEach((m) => {
     m.shininess = 25;
     m.specular = [3, 2, 1];
   });
@@ -428,7 +460,7 @@ async function main() {
     opacity: 1,
   };
 
-  const parts = obj.geometries.map(({material, data}) => {
+  const parts = obj.geometries.map(({ material, data }) => {
     if (data.color) {
       if (data.position.length === data.color.length) {
         data.color = { numComponents: 3, data: data.color };
@@ -474,20 +506,23 @@ async function main() {
         max[j] = Math.max(v, max[j]);
       }
     }
-    return {min, max};
+    return { min, max };
   }
 
   function getGeometriesExtents(geometries) {
-    return geometries.reduce(({min, max}, {data}) => {
-      const minMax = getExtents(data.position);
-      return {
-        min: min.map((min, ndx) => Math.min(minMax.min[ndx], min)),
-        max: max.map((max, ndx) => Math.max(minMax.max[ndx], max)),
-      };
-    }, {
-      min: Array(3).fill(Number.POSITIVE_INFINITY),
-      max: Array(3).fill(Number.NEGATIVE_INFINITY),
-    });
+    return geometries.reduce(
+      ({ min, max }, { data }) => {
+        const minMax = getExtents(data.position);
+        return {
+          min: min.map((min, ndx) => Math.min(minMax.min[ndx], min)),
+          max: max.map((max, ndx) => Math.max(minMax.max[ndx], max)),
+        };
+      },
+      {
+        min: Array(3).fill(Number.POSITIVE_INFINITY),
+        max: Array(3).fill(Number.NEGATIVE_INFINITY),
+      }
+    );
   }
 
   // calcula o tamanho do objeto
@@ -495,31 +530,26 @@ async function main() {
   const range = m4.subtractVectors(extents.max, extents.min);
   // Quantidade para mover o objeto para que seu centro esteja na origem
   const objOffset = m4.scaleVector(
-      m4.addVectors(
-        extents.min,
-        m4.scaleVector(range, 0.5)),
-      -1);
+    m4.addVectors(extents.min, m4.scaleVector(range, 0.5)),
+    -1
+  );
   const cameraTarget = [0, 0, 0];
   // Descobre a distância para mover a câmera para que provavelmente
   // possamos ver o objeto.
-  const radius = m4.length(range) * 1.05;   // 1.5
-  const cameraPosition = m4.addVectors(cameraTarget, [
-    0,
-    0,
-    radius,
-  ]);
-  
+  const radius = m4.length(range) * 1.05; // 1.5
+  const cameraPosition = m4.addVectors(cameraTarget, [0, 0, radius]);
+
   // Define zNear e zFar para algo esperançosamente apropriado
   // para o tamanho deste objeto.
   const zNear = radius / 100;
   const zFar = radius * 3;
 
   function degToRad(deg) {
-    return deg * Math.PI / 180;
+    return (deg * Math.PI) / 180;
   }
 
   function render(time) {
-    time *= 0.001;  // converte para segundos
+    time *= 0.001; // converte para segundos
 
     twgl.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -550,15 +580,19 @@ async function main() {
     // Calcula a matriz de mundo uma vez, pois todas as partes compartilham o mesmo espaço
     let u_world = m4.yRotation(time);
     u_world = m4.translate(u_world, ...objOffset);
-  
+
     // Renderiza cada parte do modelo
-    for (const {bufferInfo, vao, material} of parts) {
-       // Define os atributos para esta parte.
+    for (const { bufferInfo, vao, material } of parts) {
+      // Define os atributos para esta parte.
       gl.bindVertexArray(vao);
       // Chama gl.uniform
-      twgl.setUniforms(meshProgramInfo, {
-        u_world,
-      }, material);
+      twgl.setUniforms(
+        meshProgramInfo,
+        {
+          u_world,
+        },
+        material
+      );
       // Chama gl.drawArrays ou gl.drawElements
       twgl.drawBufferInfo(gl, bufferInfo);
     }

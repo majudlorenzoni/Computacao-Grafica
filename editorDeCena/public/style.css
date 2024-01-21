@@ -71,16 +71,18 @@ canvas {
 
 footer {
     font-size: 15px;
-    margin-left: 0px;
     color: beige;
     background-color: #21025c;
+    text-align: center;
+
 }
 
-a {
+footer a {
     color: beige;
     text-decoration: none;
 }
 
-a:hover {
-    text-decoration: underline;
+footer a:hover {
+    color: rgb(21, 255, 0);
+    transition: color 0.3s;
 }
