@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
+  <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="style.css">
+        <script type="module" src="main.js"></script>
+        <script type="module" src="canvas.js"></script>
         <script src="https://webgl2fundamentals.org/webgl/resources/twgl-full.min.js"></script>
         <script src="https://webgl2fundamentals.org/webgl/resources/m4.js"></script>
         <script src="https://webgl2fundamentals.org/webgl/resources/m3.js"></script>
@@ -19,6 +21,7 @@
         <section id="left_menu">
             <div class="model_selection">
                 <h2>Seleção de Modelos</h2>
+                </button>
             </div>
             
             <div class="transformation_editing">
@@ -28,11 +31,40 @@
         
         <section class="menu_center">
             <section class="scene">
-                <canvas id="canvas" width="500" height="574"></canvas>
+                <canvas id="canvas" width="650" height="600"></canvas>
             </section>
             
             <section class="models">
-                <h2>Models</h2>
+             <ul class="box-models">
+              <li class="box1">
+                <canvas id="canvas1"></canvas>
+              </li>
+
+              <li class="box2">
+                <canvas id="canvas2"></canvas>
+
+              </li>
+
+              <li class="box3">
+                <canvas id="canvas3"></canvas>
+
+              </li>
+
+              <li class="box4">
+                <canvas id="canvas4"></canvas>
+
+              </li>
+
+              <li class="box5">
+                <canvas id="canvas5"></canvas>
+
+              </li>
+
+              <li class="box6">
+                <canvas id="canvas6"></canvas>
+
+              </li>
+             </ul>
             </section>
         </section>
     </main>
@@ -41,6 +73,6 @@
     <footer>
         <p> Feito por <a href= "https://github.com/majudlorenzoni">Maria Júlia Duarte Lorenzoni</a> para a disciplina de Computação Gráfica da UFPel</p>
     </footer>
-    <script src="main.js"></script>
+
 </body>
 </html>

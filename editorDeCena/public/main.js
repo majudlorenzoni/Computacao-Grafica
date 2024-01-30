@@ -221,14 +221,7 @@ function parseMTL(text) {
 }
 
 async function main() {
-  const canvas = document.querySelector("#canvas");
-  const gl = canvas.getContext("webgl2");
-  if (!gl) {
-    return;
-  }
-
-  twgl.setAttributePrefix("a_");
-
+  
   const vs = `#version 300 es
   in vec4 a_position;
   in vec3 a_normal;
@@ -244,7 +237,7 @@ async function main() {
   out vec3 v_surfaceToView;
   out vec2 v_texcoord;
   out vec4 v_color;
-
+  
   void main() {
     vec4 worldPosition = u_world * a_position;
     gl_Position = u_projection * u_view * worldPosition;
@@ -262,7 +255,7 @@ async function main() {
   in vec3 v_surfaceToView;
   in vec2 v_texcoord;
   in vec4 v_color;
-
+  
   uniform vec3 diffuse;
   uniform sampler2D diffuseMap;
   uniform vec3 ambient;
@@ -277,17 +270,17 @@ async function main() {
 
   void main () {
     vec3 normal = normalize(v_normal);
-
+    
     vec3 surfaceToViewDirection = normalize(v_surfaceToView);
     vec3 halfVector = normalize(u_lightDirection + surfaceToViewDirection);
-
+    
     float fakeLight = dot(u_lightDirection, normal) * .5 + .5;
     float specularLight = clamp(dot(normal, halfVector), 0.0, 1.0);
-
+    
     vec4 diffuseMapColor = texture(diffuseMap, v_texcoord);
     vec3 effectiveDiffuse = diffuse * diffuseMapColor.rgb * v_color.rgb;
     float effectiveOpacity = opacity * diffuseMapColor.a * v_color.a;
-
+    
     outColor = vec4(
         emissive +
         ambient * u_ambientLight +
@@ -298,13 +291,42 @@ async function main() {
   `;
 
 
+  const idCanvas = ["canvas", "canvas1", "canvas2", "canvas3", "canvas4","canvas5", "canvas6"];
+  const objAddresses = [
+    "/obj/bottle_A_brown/bottle_A_brown.obj",
+    "/obj/banner_blue/banner_blue.obj",
+    "/obj/banner_green/banner_green.obj",
+    "/obj/barrier/barrier.obj",
+    "/obj/table_long_decorated_A/table_long_decorated_A.obj",
+    "/obj/floor_foundation_corner/floor_foundation_corner.obj",
+    "/obj/key/key.obj",
+  ];
+
+  function selectCanvas(idCanvas) {
+    const canvas = document.querySelector("#" + idCanvas);
+    console.log("funcionando canvas select");
+    return canvas;
+  }
+
+  for (let i = 0; i < Math.min(idCanvas.length, objAddresses.length); i++) {
+    const canvas = selectCanvas(idCanvas[i]);
+    const gl = canvas.getContext("webgl2");
+    if (!gl) {
+      console.error("Erro ao obter contexto WebGL para " + idCanvas[i]);
+      continue;
+    }
+
+    console.log("Carregando objeto para " + idCanvas[i]);
+    twgl.setAttributePrefix("a_");
+
   // compiles and links the shaders, looks up attribute and uniform locations
   const meshProgramInfo = twgl.createProgramInfo(gl, [vs, fs]);
 
-  const objHref = '/obj/bottle_A_brown/bottle_A_brown.obj';  
+  const objHref = objAddresses[i];  
   const response = await fetch(objHref);
   const text = await response.text();
   const obj = parseOBJ(text);
+
   const baseHref = new URL(objHref, window.location.href);
   const matTexts = await Promise.all(obj.materialLibs.map(async filename => {
     const matHref = new URL(filename, baseHref).href;
@@ -469,6 +491,7 @@ async function main() {
     requestAnimationFrame(render);
   }
   requestAnimationFrame(render);
+}
 }
 
 main();

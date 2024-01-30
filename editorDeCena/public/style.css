@@ -9,7 +9,7 @@ body {
     min-height: 100vh;
     background-color: #f0e8ff;
     font-size: 13px;
-    margin-left: 30px;
+    margin: 0;
 }
 
 header {
@@ -36,12 +36,12 @@ canvas {
 #left_menu .model_selection,
 #left_menu .transformation_editing {
     height: 300px;
-    width: 250px;
-    margin-left: 10px;
+    width: 300px;
     margin-bottom: 5px;
     border: #21025c solid 2px;
     border-radius: 15px;
 }
+
 
 .menu_center {
     display: flex;
@@ -61,12 +61,49 @@ canvas {
 
 .menu_center .scene {
     height: 600px;
-    width: 500px;
+    width: 650px;
 }
 
 .menu_center .models {
-    height: 600px;
-    width: 250px;
+  height: 600px;
+  width: 310px;
+  overflow-y: scroll;
+}
+
+ 
+.menu_center .models::-webkit-scrollbar {
+  width: 10px;
+}
+.menu_center .models::-webkit-scrollbar-track {
+  background: #f0e8ff;
+}
+
+.menu_center .models::-webkit-scrollbar-thumb {
+  background: #21025c;
+  border-radius: 50px;
+}
+
+
+.menu_center .models .box-models{
+  list-style: none; /* Remova a marcação de lista padrão */
+  padding: 0; /* Remova o preenchimento padrão da lista */
+
+}
+
+.menu_center .models .box-models li {
+  display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    height: 115px;
+    margin-bottom: 10px; /* Adicione margem inferior entre os itens */
+    background-color: #f0e8ff;
+}
+
+.menu_center .models .box-models li:hover {
+  background-color: #21025c;
+  transition: background-color 0.3s;
 }
 
 footer {
