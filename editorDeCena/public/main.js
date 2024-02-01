@@ -2,7 +2,7 @@
 
 // Recebe o conteúdo de um arquivo .obj e retorna um objeto com as informações sobre a geometria, materiais
 
-function parseOBJ(text) {
+export function parseOBJ(text) {
   const objPositions = [[0, 0, 0]];
   const objTexcoords = [[0, 0]];
   const objNormals = [[0, 0, 0]];
@@ -169,11 +169,11 @@ function parseOBJ(text) {
   };
 }
 
-function parseMapArgs(unparsedArgs) {
+export function parseMapArgs(unparsedArgs) {
   return unparsedArgs;
 }
 
-function parseMTL(text) {
+export function parseMTL(text) {
   const materials = {};
   let material;
 
@@ -220,7 +220,7 @@ function parseMTL(text) {
   return materials;
 }
 
-async function main() {
+export async function main(selectCanva, selectObj) {
   
   const vs = `#version 300 es
   in vec4 a_position;
@@ -290,9 +290,10 @@ async function main() {
   }
   `;
 
+  const canvasSceneId = "canvasScene";
 
-  const idCanvas = ["canvas", "canvas1", "canvas2", "canvas3", "canvas4","canvas5", "canvas6"];
-  const objAddresses = [
+  let idCanvas = ["canvas1", "canvas2", "canvas3", "canvas4","canvas5", "canvas6", "canvas7"];
+  let objAddresses = [
     "/obj/bottle_A_brown/bottle_A_brown.obj",
     "/obj/banner_blue/banner_blue.obj",
     "/obj/banner_green/banner_green.obj",
@@ -301,22 +302,30 @@ async function main() {
     "/obj/floor_foundation_corner/floor_foundation_corner.obj",
     "/obj/key/key.obj",
   ];
+  
+  if (selectCanva && selectObj !== null) {
+    idCanvas = [canvasSceneId];
+    console.log("idCanvas: ", idCanvas);
+    objAddresses = [selectObj];
+    console.log("objAddresses: ", objAddresses);
+    return;
+  }
 
-  function selectCanvas(idCanvas) {
-    const canvas = document.querySelector("#" + idCanvas);
-    console.log("funcionando canvas select");
+  
+  function boxCanva(idCanvas) {
+    let canvas = document.querySelector("#" + idCanvas);
     return canvas;
   }
 
   for (let i = 0; i < Math.min(idCanvas.length, objAddresses.length); i++) {
-    const canvas = selectCanvas(idCanvas[i]);
+    const canvas = boxCanva(idCanvas[i]);
     const gl = canvas.getContext("webgl2");
     if (!gl) {
       console.error("Erro ao obter contexto WebGL para " + idCanvas[i]);
       continue;
     }
 
-    console.log("Carregando objeto para " + idCanvas[i]);
+    //console.log("Carregando objeto para " + idCanvas[i]);
     twgl.setAttributePrefix("a_");
 
   // compiles and links the shaders, looks up attribute and uniform locations
@@ -492,6 +501,8 @@ async function main() {
   }
   requestAnimationFrame(render);
 }
+  return {idCanvas, objAddresses};
 }
 
 main();
+
