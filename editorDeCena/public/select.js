@@ -23,12 +23,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   for (let i = 0; i < Math.min(idCanvas.length, objAddresses.length); i++) {
     main(idCanvas[i], objAddresses[i]);
   }
-  const modelSelection = document.querySelector(".model_selection");
 
   const boxes = document.querySelectorAll(".box-models li");
-  const buttonContainer = document.createElement("div");
-  buttonContainer.id = "buttonContainer";
-  document.body.appendChild(buttonContainer);
+  const buttonContainer = document.querySelector(".buttonContainer");
 
   boxes.forEach(function (box, index) {
     box.onclick = function () {
@@ -43,9 +40,10 @@ document.addEventListener("DOMContentLoaded", async function () {
       newButton.textContent = title;
       
       newButton.addEventListener("click", function () {
-      newButton.classList.add("button-models");
-      newButton.style.display = "block";
+        newButton.classList.add("buttonContainer");
+        newButton.style.display = "block";
       });
+
       buttonContainer.appendChild(newButton);
     };
   });

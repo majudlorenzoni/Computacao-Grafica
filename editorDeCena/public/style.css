@@ -57,9 +57,14 @@ canvas {
     background-color: rgb(255, 255, 255);
 }
 
+#left_menu .model_selection {
+  overflow-y: auto;
+  position: relative;
+}
+
 .button-options button {
   background-color:#5425aa; 
-  width: 93px;
+  width: 90px;
   color: white; 
   padding: 10px 0px; 
   font-size: 16px; 
@@ -75,48 +80,49 @@ canvas {
   background-color: #21025c;
 }
 
-.button-models {
-  display: flex;
-  justify-content: center;
-}
-.button-models button {
-  display: none;
-  background-color:#5425aa; 
-  width: 286px;
-  color: white; 
-  padding: 10px 0px; 
-  font-size: 16px; 
-  border: none;
-  border-radius: 10px; 
-  cursor: pointer; 
-  font-family: MedievalSharp;
-  transition: background-color 0.3s;
-  margin-top: 10px;
-}
-
-
 #buttonContainer {
-  margin-top: 20px; /* Ajuste conforme necessário */
   display: flex;
-  flex-direction: column;}
+  flex-direction: column;
+  justify-content: center;
+  position: absolute; /* Alterado para posição absoluta para ajustar a posição */
+  left: 47.5%; /* Posiciona no meio horizontalmente */
+  transform: translateX(-50%); /* Centraliza completamente o conteúdo */
+  margin-left: 7.5px;
+  transition: max-width 0.3s;
+}
 
 #buttonContainer button {
+  transition: max-width 0.3s;
+  display: flex;
   background-color:#5425aa; 
-  width: 286px;
+  width: 270px;
   color: white; 
   padding: 10px 10px; 
   font-size: 16px; 
   border: none;
   border-radius: 10px; 
-  cursor: pointer; 
   font-family: MedievalSharp;
   transition: background-color 0.3s;
   margin-top: 10px;
+  justify-content: center;
 }
 
 #buttonContainer  button:hover {
   background-color: #21025c; 
 }
+
+#left_menu .model_selection::-webkit-scrollbar {
+  width: 10px;
+}
+#left_menu .model_selection::-webkit-scrollbar-track {
+  background: #f0e8ff;
+}
+
+#left_menu .model_selection::-webkit-scrollbar-thumb {
+  background: #21025c;
+  border-radius: 50px;
+}
+
 .menu_center {
     display: flex;
     flex-direction: row;
