@@ -44,6 +44,7 @@ canvas {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    
 }
 
 #left_menu .model_selection,
@@ -53,8 +54,49 @@ canvas {
     margin-bottom: 5px;
     border: #21025c solid 2px;
     border-radius: 15px;
+    background-color: rgb(255, 255, 255);
 }
 
+.button-options button {
+  background-color:#5425aa; 
+  width: 93px;
+  color: white; 
+  padding: 10px 0px; 
+  font-size: 16px; 
+  border: none; 
+  border-radius: 10px;
+  cursor: pointer; 
+  font-family: MedievalSharp;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+.button-options button:hover {
+  background-color: #21025c;
+}
+
+.button-models {
+  display: flex;
+  justify-content: center;
+}
+.button-models button {
+  display: none;
+  background-color:#5425aa; 
+  width: 286px;
+  color: white; 
+  padding: 10px 0px; 
+  font-size: 16px; 
+  border: none;
+  border-radius: 10px; 
+  cursor: pointer; 
+  font-family: MedievalSharp;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+.button-models button:hover {
+  background-color: #21025c; 
+}
 
 .menu_center {
     display: flex;
