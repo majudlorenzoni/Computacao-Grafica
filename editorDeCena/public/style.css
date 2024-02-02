@@ -94,10 +94,29 @@ canvas {
   margin-top: 10px;
 }
 
-.button-models button:hover {
-  background-color: #21025c; 
+
+#buttonContainer {
+  margin-top: 20px; /* Ajuste conforme necessário */
+  display: flex;
+  flex-direction: column;}
+
+#buttonContainer button {
+  background-color:#5425aa; 
+  width: 286px;
+  color: white; 
+  padding: 10px 10px; 
+  font-size: 16px; 
+  border: none;
+  border-radius: 10px; 
+  cursor: pointer; 
+  font-family: MedievalSharp;
+  transition: background-color 0.3s;
+  margin-top: 10px;
 }
 
+#buttonContainer  button:hover {
+  background-color: #21025c; 
+}
 .menu_center {
     display: flex;
     flex-direction: row;

@@ -23,42 +23,31 @@ document.addEventListener("DOMContentLoaded", async function () {
   for (let i = 0; i < Math.min(idCanvas.length, objAddresses.length); i++) {
     main(idCanvas[i], objAddresses[i]);
   }
+  const modelSelection = document.querySelector(".model_selection");
 
   const boxes = document.querySelectorAll(".box-models li");
-  const button = document.getElementById("btnNovo");
+  const buttonContainer = document.createElement("div");
+  buttonContainer.id = "buttonContainer";
+  document.body.appendChild(buttonContainer);
 
   boxes.forEach(function (box, index) {
     box.onclick = function () {
       idCanvas = "canvasScene";
       main(idCanvas, objAddresses[index]);
-
+      
       const titles = ["Garrafa", "Banner Azul", "Banner Verde", "Barreira", "Mesa", "Chão", "Chave"];
       const title = titles[index] || "Título Padrão";
-      button.textContent = title;
+     
       console.log("Clicou na caixa " + index);
       const newButton = document.createElement("button");
       newButton.textContent = title;
       
-      document.body.appendChild(newButton)
-      console.log("Botão criado", title);
-
+      newButton.addEventListener("click", function () {
+      newButton.classList.add("button-models");
+      newButton.style.display = "block";
+      });
+      buttonContainer.appendChild(newButton);
     };
-  });
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-  var boxModels = document.querySelectorAll(".box-models li");
-  var btnNovo = document.getElementById("btnNovo");
-
-  // Adiciona um evento de clique a cada elemento da classe 'box-models'
-  boxModels.forEach(function (boxModel) {
-    boxModel.addEventListener("click", function () {
-      // Obtém o botão novo pelo ID
-      btnNovo.classList.add("button-models");
-
-      // Altera a visibilidade do botão novo
-      btnNovo.style.display = "block";
-    });
   });
 });
 
