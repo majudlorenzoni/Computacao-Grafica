@@ -123,6 +123,35 @@ canvas {
   border-radius: 50px;
 }
 
+.transformation-options {
+  background-color: #f5f5f5;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+}
+
+.transformation-options label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.transformation-options input[type="range"] {
+  width: 100%;
+}
+
+.apply-button {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.apply-button:hover {
+  background-color: #45a049;
+}
+
 .menu_center {
     display: flex;
     flex-direction: row;

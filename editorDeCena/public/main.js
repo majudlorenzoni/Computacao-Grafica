@@ -156,7 +156,7 @@ export function parseOBJ(text) {
 
   return {
     geometries,
-    materialLibs,
+    materialLibs, 
   };
 }
 
@@ -233,7 +233,8 @@ export function parseMTL(text) {
   return materials;
 }
 
-export async function main(idCanvas = "", objAddresses = "") {
+
+export async function main(idCanvas = "", objAddresses = { path: "", scale: "" }) {
   const vs = `#version 300 es
   in vec4 a_position;
   in vec3 a_normal;
@@ -321,12 +322,21 @@ export async function main(idCanvas = "", objAddresses = "") {
 
     // compiles and links the shaders, looks up attribute and uniform locations
 
-    const objHref = objAddresses;
-    console.log("Carregando objeto de " + objHref);
+    const objHref = objAddresses.path
     const response = await fetch(objHref);
     const text = await response.text();
     const obj = parseOBJ(text);
-
+    console.log("Objeto carregado");
+    
+    obj.geometries.forEach((geometry, i) => {
+      if (geometry && geometry.data && geometry.data.position) {
+        for (let j = 0; j < geometry.data.position.length; j++) {
+          geometry.data.position[j] = geometry.data.position[j] * objAddresses.scale[i];
+        }
+      }
+    });
+    
+    console.log("Objeto indo", objAddresses.scale);
     const baseHref = new URL(objHref, window.location.href);
     const matTexts = await Promise.all(
       obj.materialLibs.map(async (filename) => {
@@ -368,17 +378,16 @@ export async function main(idCanvas = "", objAddresses = "") {
     const parts = obj.geometries.map(({ material, data }) => {
       if (data.color) {
         if (data.position.length === data.color.length) {
-          // it's 3. The our helper library assumes 4 so we need
-          // to tell it there are only 3.
           data.color = { numComponents: 3, data: data.color };
         }
       } else {
-        // there are no vertex colors so just use constant white
         data.color = { value: [1, 1, 1, 1] };
       }
 
-      // create a buffer for each array by calling
-      // gl.createBuffer, gl.bindBuffer, gl.bufferData
+      for (let i = 0; i < data.position.length; i++) {
+        data.position[i] *= objAddresses.scale[i % 3];
+      }
+      
       const bufferInfo = twgl.createBufferInfoFromArrays(gl, data);
       const vao = twgl.createVAOFromBufferInfo(gl, meshProgramInfo, bufferInfo);
       return {
@@ -388,8 +397,11 @@ export async function main(idCanvas = "", objAddresses = "") {
         },
         bufferInfo,
         vao,
+        scale : objAddresses.scale,
       };
     });
+    
+    console.log(objAddresses.scale)
 
     function getExtents(positions) {
       const min = positions.slice(0, 3);
@@ -422,7 +434,7 @@ export async function main(idCanvas = "", objAddresses = "") {
 
     const extents = getGeometriesExtents(obj.geometries);
     const range = m4.subtractVectors(extents.max, extents.min);
-    // amount to move the object so its center is at the origin
+    // deslocamento do objeto para o centro
     const objOffset = m4.scaleVector(
       m4.addVectors(extents.min, m4.scaleVector(range, 0.5)),
       -1
@@ -442,7 +454,7 @@ export async function main(idCanvas = "", objAddresses = "") {
     }
 
     function render(time) {
-      time *= 0.001; // convert to seconds
+      time *= 0.001; 
 
       twgl.resizeCanvasToDisplaySize(gl.canvas);
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -458,10 +470,7 @@ export async function main(idCanvas = "", objAddresses = "") {
       );
 
       const up = [0, 1, 0];
-      // Compute the camera's matrix using look at.
       const camera = m4.lookAt(cameraPosition, cameraTarget, up);
-
-      // Make a view matrix from the camera matrix.
       const view = m4.inverse(camera);
 
       const sharedUniforms = {
@@ -472,16 +481,13 @@ export async function main(idCanvas = "", objAddresses = "") {
       };
 
       gl.useProgram(meshProgramInfo.program);
-
-      // calls gl.uniform
       twgl.setUniforms(meshProgramInfo, sharedUniforms);
-
-      // compute the world matrix once since all parts
-      // are at the same space.
+      
       let u_world = m4.yRotation(time);
       u_world = m4.translate(u_world, ...objOffset);
 
-      for (const { bufferInfo, vao, material } of parts) {
+      for (const { bufferInfo, vao, material, scale } of parts) {
+     
         // set the attributes for this part.
         gl.bindVertexArray(vao);
         // calls gl.uniform
@@ -498,7 +504,7 @@ export async function main(idCanvas = "", objAddresses = "") {
       requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
-    return { idCanvas: idCanvas, objAddresses: objAddresses };
+    return { idCanvas: idCanvas, objAddresses: objAddresses};
   }
 }
 main();
