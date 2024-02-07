@@ -130,14 +130,20 @@ canvas {
   border: 1px solid #ccc;
 }
 
-.transformation-options label {
+
+.transformation_editing label {
   display: block;
-  margin-bottom: 5px;
+  font-size: 16px;
+  margin-top: 15px;
+  color: #21025c;
+  font-weight: bold;
 }
 
-.transformation-options input[type="range"] {
-  width: 100%;
+.transformation_editing input[type="range"] {
+  width: 80%;
+  margin: 10px auto;
 }
+
 
 .apply-button {
   background-color: #4caf50;

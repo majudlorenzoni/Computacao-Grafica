@@ -4,8 +4,10 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="style.css">
-        <script type="module" src="main.js"></script>
+        <script type="module" src="renderSelect.js"></script>
         <script type="module" src="select.js"></script>
+        <script type="module" src="read.js"></script>
+        <script type="module" src="renderMenu.js"></script>
         <script src="https://webgl2fundamentals.org/webgl/resources/twgl-full.min.js"></script>
         <script src="https://webgl2fundamentals.org/webgl/resources/m4.js"></script>
         <script src="https://webgl2fundamentals.org/webgl/resources/m3.js"></script>
@@ -30,15 +32,12 @@
             </div>
             
             <div class="transformation_editing">
-                <h2>Edição de Transformações</h2>
-                <!-- <div class="transformation-options">
-                    <label for="translacao">Translação</label>
-                    <input type="range" id="translacao" name="translacao" min="-10" max="10" value="0">
-                    <label for="rotacao">Rotação</label>
-                    <input type="range" id="rotacao" name="rotacao" min="-10" max="10" value="0">
-                    <label for="escala">Escala</label>
-                    <input type="range" id="escala" name="escala" min="-10" max="10" value="0"> -->
-                </div>
+              <label for="rotation">Rotação</label>
+              <input id="rotation" type="range" step="0.1" value="5" min="0" max="7">
+              <label for="translation">Translação</label>
+              <input id="translation" type="range" step="0.1" value="5" min="0" max="10">
+              
+              <div>
             </div>
         </section> 
         
@@ -85,7 +84,6 @@
             </section>
         </section>
     </main>
-    
 
     <footer>
         <p> Feito por <a href= "https://github.com/majudlorenzoni">Maria Júlia Duarte Lorenzoni</a> para a disciplina de Computação Gráfica da UFPel</p>
