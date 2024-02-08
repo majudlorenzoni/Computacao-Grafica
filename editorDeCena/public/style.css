@@ -155,8 +155,25 @@ canvas {
 .transformation_editing input[type="range"] {
   width: 100%;
   margin: 10px auto;
+  background: #21025c;
 }
 
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; /* Largura do controle deslizante */
+  height: 20px; /* Altura do controle deslizante */
+  background: #4caf50; /* Cor do controle deslizante */
+  border-radius: 50%; /* Forma circular do controle deslizante */
+  cursor: pointer;
+}
+
+input[type=range]::-moz-range-thumb {
+  width: 20px; /* Largura do controle deslizante */
+  height: 20px; /* Altura do controle deslizante */
+  background: #4caf50; /* Cor do controle deslizante */
+  border-radius: 50%; /* Forma circular do controle deslizante */
+  cursor: pointer;
+}
 .transformation-editing .bottonTranslation input[type="range"] {
   width: 60%;
   margin: 10px auto;
@@ -235,6 +252,25 @@ canvas {
   transition: background-color 0.3s;
 }
 
+.images-texture button {
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 50%;
+  margin-top: 5px;
+}
+
+#defaultTextura1Btn {
+  background-color: #2b0a79;
+}
+
+#defaultTextura2Btn {
+  background-color: #1abb04;
+}
+
+#defaultTextura3Btn {
+  background-color: #610505;
+}
 footer {
   font-size: 15px;
   color: beige;

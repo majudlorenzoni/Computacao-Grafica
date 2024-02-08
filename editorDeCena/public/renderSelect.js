@@ -1,54 +1,101 @@
 import { parseOBJ, parseMTL, vs, fs } from "./read.js";
-import { degToRad, getExtents, getGeometriesExtents } from "./read.js";
+import { degToRad, getGeometriesExtents } from "./read.js";
 
 let canvas = document.getElementById("canvasScene");
 let gl = canvas.getContext("webgl2");
 const meshProgramInfo = twgl.createProgramInfo(gl, [vs, fs]);
 let objDataScene = [];
 let objectsOnScene = [];
-let novaTexturaP = "/images/textura1.png";
 let objAddresses = [
-  { path: "/obj/bottle_A_brown/bottle_A_brown.obj" },
-  { path: "/obj/banner_blue/banner_blue.obj" },
-  { path: "/obj/banner_green/banner_green.obj" },
-  { path: "/obj/barrier/barrier.obj" },
-  { path: "/obj/table_long_decorated_A/table_long_decorated_A.obj" },
-  { path: "/obj/floor_foundation_corner/floor_foundation_corner.obj" },
-  { path: "/obj/key/key.obj" },
+  { path: "/obj/bottle_A_brown/bottle_A_brown.obj",
+    textures: [
+      { path: "textura1.png" },
+      { path: "textura2.png" },
+      { path: "textura3.png" },
+    ],
+  },
+  { path: "/obj/banner_blue/banner_blue.obj",
+    textures: [
+      { path: "textura1.png" },
+      { path: "textura2.png" },
+      { path: "textura3.png" },
+    ],
+  },
+  {
+    path: "/obj/banner_green/banner_green.obj",
+    textures: [
+      { path: "textura1.png" },
+      { path: "textura2.png" },
+      { path: "textura3.png" },
+    ],
+  },
+
+  { path: "/obj/barrier/barrier.obj",
+  textures: [
+    { path: "textura1.png" },
+    { path: "textura2.png" },
+    { path: "textura3.png" },
+  ],
+ },
+  { path: "/obj/table_long_decorated_A/table_long_decorated_A.obj",  textures: [
+    { path: "textura1.png" },
+    { path: "textura2.png" },
+    { path: "textura3.png" },
+  ],
+ },
+  { path: "/obj/floor_foundation_corner/floor_foundation_corner.obj", textures: [
+    { path: "textura1.png" },
+    { path: "textura2.png" },
+    { path: "textura3.png" },
+  ],
+},
+  { path: "/obj/key/key.obj", 
+  textures: [
+    { path: "textura1.png" },
+    { path: "textura2.png" },
+    { path: "textura3.png" },
+  ], },
 ];
 
-const sceneData = {
-  objects: objDataScene.map(objectOnScene => ({
-    position: objectOnScene.position,
-    orientation: objectOnScene.orientation,
-    scale: objectOnScene.scale,
-    texture: objectOnScene.texture,
-    geometry: objectOnScene.geometry,
-    cameraSettings: {
-      position: objectOnScene.cameraPosition,
-      target: objectOnScene.cameraTarget,
-      fieldOfView: objectOnScene.fieldOfView,
-      aspectRatio: objectOnScene.aspectRatio,
-      nearPlane: objectOnScene.nearPlane,
-      farPlane: objectOnScene.farPlane
-    }
-  }))
-};
- export { sceneData };
 
-export function saveSceneToJson(filename) {
-  const jsonData = JSON.stringify(sceneData);
-  const blob = new Blob([jsonData], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename || "scene.json";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+const saveButton = document.getElementById("btnSalvar");
+saveButton.addEventListener("click", function () {
+let copyObjs = objectsOnScene.map((obj) => {
+  return {
+    objData: obj.objData,
+    objAddress: obj.objAddress,
+  };
+});
+console.log("COPIANDO OS OBJETOS: ", copyObjs);
+const data = JSON.stringify(copyObjs);
+const blob = new Blob([data], { type: "application/json" });
+const url = URL.createObjectURL(blob);
+const a = document.createElement("a");
+a.href = url;
+a.download = "scene.json";
+document.body.appendChild(a);
+a.click();
+
+});
+
+//CARREGAR CENA - TODO O NECESSÁRIO PARA CHAMAR RENDERSELECT NOVAMENTE
+
+async function loadSceneFromJSON(jsonData) {
+  const sceneData = JSON.parse(jsonData);
+  objectsOnScene = [];
+
+  for (const obj of sceneData) {
+      const objData = await loadObj(gl, obj.objAddress);
+      objectsOnScene.push({
+          canvas: obj.canvas,
+          objData: objData,
+          objAddress: obj.objAddress,
+      });
+  }
 }
 
+
+// LIMPAR CENA
 export async function clearCanvas(gl) {
   gl.clear(gl.DEPTH_BUFFER_BIT);
   gl.clear(gl.COLOR_BUFFER_BIT);
@@ -64,26 +111,26 @@ async function callObjData() {
   });
 }
 
-export async function renderSelect(title, index) {
+export async function renderSelect(index) {
   objectsOnScene.push({ objAddress: objAddresses[index] });
+  console.log(objectsOnScene);
 
   const objData = await loadObj(
     gl,
-    objectsOnScene[objectsOnScene.length - 1].objAddress,
-    novaTexturaP
+    objectsOnScene[objectsOnScene.length - 1].objAddress
   );
+
   objectsOnScene[objectsOnScene.length - 1].objData = objData;
   callObjData();
 }
 
-async function loadObj(gl, objAddress, novaTexturaP) {
-  twgl.setAttributePrefix("a_");
-
+async function loadTexture(gl, objAddress, urlTexture) {
   const objHref = objAddress.path;
   const response = await fetch(objHref);
   const text = await response.text();
   const obj = parseOBJ(text);
 
+  // COMEÇA AQUI A FUNÇÃO
   const baseHref = new URL(objHref, window.location.href);
   const matTexts = await Promise.all(
     obj.materialLibs.map(async (filename) => {
@@ -98,20 +145,17 @@ async function loadObj(gl, objAddress, novaTexturaP) {
   const textures = {
     defaultWhite: twgl.createTexture(gl, { src: [255, 255, 255, 255] }),
   };
-  const novaTextura = twgl.createTexture(gl, {
-    src: novaTexturaP,
-    flipY: true,
-  });
-  textures["texture1.png"] = novaTextura; //textura 1 está em
 
-  console.log(" TEXTURES EM LOAD: ", textures);
   // load texture for materials
   for (const material of Object.values(materials)) {
     Object.entries(material)
-      .filter(([key]) => key.endsWith("Map"))
+      .filter(([key]) => key.endsWith("Map")) //textura
       .forEach(([key, filename]) => {
+        //carrega a textura e atribui ao material
+        filename = urlTexture ? urlTexture : filename;
         let texture = textures[filename];
         if (!texture) {
+          // const textureHref = new URL(filename, baseHref).href;
           const textureHref = new URL(filename, baseHref).href;
           texture = twgl.createTexture(gl, {
             src: textureHref,
@@ -125,7 +169,7 @@ async function loadObj(gl, objAddress, novaTexturaP) {
 
   const defaultMaterial = {
     diffuse: [1, 1, 1],
-    diffuseMap: novaTextura,
+    diffuseMap: textures.defaultWhite,
     ambient: [0, 0, 0],
     specular: [1, 1, 1],
     shininess: 400,
@@ -154,6 +198,14 @@ async function loadObj(gl, objAddress, novaTexturaP) {
     };
   });
 
+  return parts;
+}
+
+async function loadObj(gl, objAddress) {
+  twgl.setAttributePrefix("a_");
+  // const { parts, textures } = await loadTexture(gl, objAddress, "textura2.png");
+  const parts = await loadTexture(gl, objAddress, "dungeon_texture.png");
+
   const extents = getGeometriesExtents(parts[0].obj.geometries);
   const range = m4.subtractVectors(extents.max, extents.min);
 
@@ -170,7 +222,8 @@ async function loadObj(gl, objAddress, novaTexturaP) {
   const cameraPosition = m4.addVectors(cameraTarget, [0, 0, radius]);
   const zNear = radius / 100;
   const zFar = radius * 3;
-
+  
+  console.log("OBJ ADDRESS: ", objAddress);
   return {
     parts,
     meshProgramInfo,
@@ -183,15 +236,17 @@ async function loadObj(gl, objAddress, novaTexturaP) {
     radius,
     escala,
     extents,
-    textures,
-    novaTextura,
+    texturesAddresses: objAddress.textures,
+    indexAdress: objAddress,
   };
 }
 
-function drawObj(gl) {
-  function render(time) {
+async function drawObj(gl) {
+  async function render(time) {
     if (objDataScene.length != 0) {
-      time *= 0.0001;
+      // loadTexture(gl, objDataScene[0], "textura2.png");
+      // objectsOnScene[0] = loadObj(gl, objAddresses[0], );
+      time *= 0;
       twgl.resizeCanvasToDisplaySize(gl.canvas);
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
       gl.enable(gl.DEPTH_TEST);
@@ -203,16 +258,6 @@ function drawObj(gl) {
       const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 
       for (const objectOnScene of objDataScene) {
-        objectOnScene.textures = {
-          defaultWhite: twgl.createTexture(gl, { src: [255, 255, 255, 255] }),
-        };
-        objectOnScene.novaTextura = twgl.createTexture(gl, {
-          src: novaTexturaP,
-          flipY: true,
-        });
-        objectOnScene.textures["texture1.png"] = objectOnScene.novaTextura; //textura 1 está em
-        // console.log(" TEXTURES NO DRAW: ", objectOnScene.textures);
-
         const cameraTarget = [0, 0, 0];
         const radius = m4.length(objectOnScene.range) * objectOnScene.escala;
         objectOnScene.cameraPosition = m4.addVectors(cameraTarget, [
@@ -281,7 +326,9 @@ export async function transformationEditing(buttonIndex) {
   let inputTranslationX = document.getElementById("translateXButton");
   let inputTranslationY = document.getElementById("translateYButton");
   let inputTranslationZ = document.getElementById("translateZButton");
-  let alterTexture = document.getElementById("alterTexture");
+  let defaultTextura1Btn = document.getElementById("defaultTextura1Btn");
+  let defaultTextura2Btn = document.getElementById("defaultTextura2Btn");
+  let defaultTextura3Btn = document.getElementById("defaultTextura3Btn");
 
   inputRotation.onchange = function () {
     objDataScene[buttonIndex].yrotation = inputRotation.value;
@@ -310,30 +357,32 @@ export async function transformationEditing(buttonIndex) {
     );
   };
 
-  alterTexture.onclick = function () {
-    objDataScene[buttonIndex].textures;
-    console.log(" TEXTURES NO ALTER: ", objDataScene[buttonIndex].textures);
+  defaultTextura1Btn.onclick = async function () {
+    objDataScene[buttonIndex].parts = await loadTexture(
+      gl,
+      objDataScene[buttonIndex].indexAdress,
+      objDataScene[buttonIndex].texturesAddresses[0].path
+    );
+    console.log("obj data scene: ", objDataScene);
   };
-}
 
-export async function saveCanvas(canvas, data, filename) {
-  const canvasData = canvas.toDataURL();
-  const jsonData = JSON.stringify(data);
-  const combinetData = { canvasData, jsonData };
-  console.log("save canvas");
+  defaultTextura2Btn.onclick = async function () {
+    console.log("objDataScene: ", objDataScene[buttonIndex]);
 
-  const json = JSON.stringify(data);
-  const blob = new Blob([json], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+    objDataScene[buttonIndex].parts = await loadTexture(
+      gl,
+      objDataScene[buttonIndex].indexAdress,
+      objDataScene[buttonIndex].texturesAddresses[1].path
+    );
+  };
 
-  console.log("dowload canvas");
+  defaultTextura3Btn.onclick = async function () {
+    objDataScene[buttonIndex].parts = await loadTexture(
+      gl,
+      objDataScene[buttonIndex].indexAdress,
+      objDataScene[buttonIndex].texturesAddresses[2].path
+    );
+  };
 }
 
 await drawObj(gl);
