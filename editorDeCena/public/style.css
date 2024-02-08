@@ -1,17 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap");
 
 body {
-    font-family: 'MedievalSharp', cursive;
-    color: #21025c;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    background-color: #f0e8ff;
-    font-size: 13px;
-    margin: 0;
+  font-family: "MedievalSharp", cursive;
+  color: #21025c;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f0e8ff;
+  font-size: 13px;
+  margin: 0;
 }
-
 
 body::-webkit-scrollbar {
   width: 10px;
@@ -26,51 +25,53 @@ body::-webkit-scrollbar-thumb {
 }
 
 header {
-    font-size: 18px;
+  font-size: 18px;
 }
 
 main {
-    display: flex;
-    flex-direction: row;
-    flex: 1;
-    align-items: center; /* Centralizar itens no eixo transversal (horizontal) */
-    justify-content: center; /* Centralizar itens no eixo principal (vertical) */
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  /* align-items: center; Centralizar itens no eixo transversal (horizontal) */
+  justify-content: center; /* Centralizar itens no eixo principal (vertical) */
 }
 canvas {
-    display: block;
+  display: block;
 }
 
 #left_menu {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 620px;
+  justify-content: space-between;
 }
 
 #left_menu .model_selection,
 #left_menu .transformation_editing {
-    height: 300px;
-    width: 300px;
-    margin-bottom: 5px;
-    border: #21025c solid 2px;
-    border-radius: 15px;
-    background-color: rgb(255, 255, 255);
+  width: 300px;
+  margin-bottom: 5px;
+  border: #21025c solid 2px;
+  border-radius: 15px;
+  background-color: rgb(255, 255, 255);
+  box-sizing: border-box;
 }
 
 #left_menu .model_selection {
   overflow-y: auto;
   position: relative;
+  height: 300px;
 }
 
 .button-options button {
-  background-color:#5425aa; 
+  background-color: #5425aa;
   width: 90px;
-  color: white; 
-  padding: 10px 0px; 
-  font-size: 16px; 
-  border: none; 
+  color: white;
+  padding: 10px 0px;
+  font-size: 16px;
+  border: none;
   border-radius: 10px;
-  cursor: pointer; 
+  cursor: pointer;
   font-family: MedievalSharp;
   transition: background-color 0.3s;
   margin-top: 10px;
@@ -94,21 +95,21 @@ canvas {
 #buttonContainer button {
   transition: max-width 0.3s;
   display: flex;
-  background-color:#5425aa; 
+  background-color: #5425aa;
   width: 270px;
-  color: white; 
-  padding: 10px 10px; 
-  font-size: 16px; 
+  color: white;
+  padding: 10px 10px;
+  font-size: 16px;
   border: none;
-  border-radius: 10px; 
+  border-radius: 10px;
   font-family: MedievalSharp;
   transition: background-color 0.3s;
   margin-top: 10px;
   justify-content: center;
 }
 
-#buttonContainer  button:hover {
-  background-color: #21025c; 
+#buttonContainer button:hover {
+  background-color: #21025c;
 }
 
 #left_menu .model_selection::-webkit-scrollbar {
@@ -130,20 +131,36 @@ canvas {
   border: 1px solid #ccc;
 }
 
+.transformation_editing {
+  gap: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 30px;
+  box-sizing: border-box;
+  height: 400px;
+}
+
+.bottonTXYZ {
+  display: flex;
+  gap: 5px;
+}
 
 .transformation_editing label {
   display: block;
   font-size: 16px;
-  margin-top: 15px;
   color: #21025c;
   font-weight: bold;
 }
 
 .transformation_editing input[type="range"] {
-  width: 80%;
+  width: 100%;
   margin: 10px auto;
 }
 
+.transformation-editing .bottonTranslation input[type="range"] {
+  width: 60%;
+  margin: 10px auto;
+}
 
 .apply-button {
   background-color: #4caf50;
@@ -159,24 +176,24 @@ canvas {
 }
 
 .menu_center {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 .menu_center .scene,
 .menu_center .models {
-    padding: 5px;
-    margin-left: 10px;
-    margin-bottom: 5px;
-    border: #21025c solid 2px;
-    border-radius: 15px;
-    background-color: rgb(255, 255, 255);
+  padding: 5px;
+  margin-left: 10px;
+  margin-bottom: 5px;
+  border: #21025c solid 2px;
+  border-radius: 15px;
+  background-color: rgb(255, 255, 255);
 }
 
 .menu_center .scene {
-    height: 600px;
-    width: 650px;
+  height: 600px;
+  width: 650px;
 }
 
 .menu_center .models {
@@ -185,7 +202,6 @@ canvas {
   overflow-y: scroll;
 }
 
- 
 .menu_center .models::-webkit-scrollbar {
   width: 10px;
 }
@@ -198,22 +214,20 @@ canvas {
   border-radius: 50px;
 }
 
-
-.menu_center .models .box-models{
+.menu_center .models .box-models {
   list-style: none; /* Remova a marcação de lista padrão */
   padding: 0; /* Remova o preenchimento padrão da lista */
-
 }
 
 .menu_center .models .box-models li {
   display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border-radius: 15px;
-    height: 115px;
-    margin-bottom: 10px; /* Adicione margem inferior entre os itens */
-    background-color: #f0e8ff;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px;
+  height: 115px;
+  margin-bottom: 10px; /* Adicione margem inferior entre os itens */
+  background-color: #f0e8ff;
 }
 
 .menu_center .models .box-models li:hover {
@@ -222,19 +236,18 @@ canvas {
 }
 
 footer {
-    font-size: 15px;
-    color: beige;
-    background-color: #21025c;
-    text-align: center;
-
+  font-size: 15px;
+  color: beige;
+  background-color: #21025c;
+  text-align: center;
 }
 
 footer a {
-    color: beige;
-    text-decoration: none;
+  color: beige;
+  text-decoration: none;
 }
 
 footer a:hover {
-    color: rgb(21, 255, 0);
-    transition: color 0.3s;
+  color: rgb(21, 255, 0);
+  transition: color 0.3s;
 }

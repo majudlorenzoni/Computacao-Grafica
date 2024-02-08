@@ -2,14 +2,19 @@ import {
   renderSelect,
   clearCanvas,
   transformationEditing,
+  saveSceneToJson,
 } from "./renderSelect.js";
-import { renderMenu } from "./renderMenu.js";
 
 document.addEventListener("DOMContentLoaded", async function () {
   const boxes = document.querySelectorAll(".box-models li");
   const buttonContainer = document.querySelector(".buttonContainer");
 
-  //SALVAR
+  //SAVE
+  const saveButton = document.getElementById("btnSalvar");
+  saveButton.addEventListener("click", function () {
+    saveSceneToJson('nome-do-arquivo.json');
+
+  });
   //LIMPAR
   const clearButton = document.getElementById("btnLimpar");
   clearButton.addEventListener("click", function () {

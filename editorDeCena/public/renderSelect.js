@@ -6,8 +6,7 @@ let gl = canvas.getContext("webgl2");
 const meshProgramInfo = twgl.createProgramInfo(gl, [vs, fs]);
 let objDataScene = [];
 let objectsOnScene = [];
-let countObj = [];
-
+let novaTexturaP = "/images/textura1.png";
 let objAddresses = [
   { path: "/obj/bottle_A_brown/bottle_A_brown.obj" },
   { path: "/obj/banner_blue/banner_blue.obj" },
@@ -18,9 +17,66 @@ let objAddresses = [
   { path: "/obj/key/key.obj" },
 ];
 
-console.log("OBJETCS ON SCENE: ", objectsOnScene);
+const sceneData = {
+  objects: objDataScene.map(objectOnScene => ({
+    position: objectOnScene.position,
+    orientation: objectOnScene.orientation,
+    scale: objectOnScene.scale,
+    texture: objectOnScene.texture,
+    geometry: objectOnScene.geometry,
+    cameraSettings: {
+      position: objectOnScene.cameraPosition,
+      target: objectOnScene.cameraTarget,
+      fieldOfView: objectOnScene.fieldOfView,
+      aspectRatio: objectOnScene.aspectRatio,
+      nearPlane: objectOnScene.nearPlane,
+      farPlane: objectOnScene.farPlane
+    }
+  }))
+};
+ export { sceneData };
 
-async function loadObj(gl, objAddress) {
+export function saveSceneToJson(filename) {
+  const jsonData = JSON.stringify(sceneData);
+  const blob = new Blob([jsonData], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename || "scene.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+export async function clearCanvas(gl) {
+  gl.clear(gl.DEPTH_BUFFER_BIT);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.clearColor(0, 0, 0, 0);
+  objDataScene = [];
+  objectsOnScene = [];
+  console.log("LIMPOU O CANVAS");
+}
+
+async function callObjData() {
+  objDataScene = objectsOnScene.map((obj) => {
+    return obj.objData;
+  });
+}
+
+export async function renderSelect(title, index) {
+  objectsOnScene.push({ objAddress: objAddresses[index] });
+
+  const objData = await loadObj(
+    gl,
+    objectsOnScene[objectsOnScene.length - 1].objAddress,
+    novaTexturaP
+  );
+  objectsOnScene[objectsOnScene.length - 1].objData = objData;
+  callObjData();
+}
+
+async function loadObj(gl, objAddress, novaTexturaP) {
   twgl.setAttributePrefix("a_");
 
   const objHref = objAddress.path;
@@ -42,7 +98,13 @@ async function loadObj(gl, objAddress) {
   const textures = {
     defaultWhite: twgl.createTexture(gl, { src: [255, 255, 255, 255] }),
   };
+  const novaTextura = twgl.createTexture(gl, {
+    src: novaTexturaP,
+    flipY: true,
+  });
+  textures["texture1.png"] = novaTextura; //textura 1 está em
 
+  console.log(" TEXTURES EM LOAD: ", textures);
   // load texture for materials
   for (const material of Object.values(materials)) {
     Object.entries(material)
@@ -63,7 +125,7 @@ async function loadObj(gl, objAddress) {
 
   const defaultMaterial = {
     diffuse: [1, 1, 1],
-    diffuseMap: textures.defaultWhite,
+    diffuseMap: novaTextura,
     ambient: [0, 0, 0],
     specular: [1, 1, 1],
     shininess: 400,
@@ -81,7 +143,6 @@ async function loadObj(gl, objAddress) {
 
     const bufferInfo = twgl.createBufferInfoFromArrays(gl, data);
     const vao = twgl.createVAOFromBufferInfo(gl, meshProgramInfo, bufferInfo);
-
     return {
       material: {
         ...defaultMaterial,
@@ -95,14 +156,17 @@ async function loadObj(gl, objAddress) {
 
   const extents = getGeometriesExtents(parts[0].obj.geometries);
   const range = m4.subtractVectors(extents.max, extents.min);
-  // deslocamento do objeto para o centro
+
   const objOffset = m4.scaleVector(
     m4.addVectors(extents.min, m4.scaleVector(range, 0.5)),
     -1
   );
+
   const cameraTarget = [0, 0, 0];
 
-  const radius = m4.length(range) * 1.2; //escala
+  let escala = 1.2;
+  const radius = m4.length(range) * escala;
+
   const cameraPosition = m4.addVectors(cameraTarget, [0, 0, radius]);
   const zNear = radius / 100;
   const zFar = radius * 3;
@@ -115,13 +179,19 @@ async function loadObj(gl, objAddress) {
     cameraTarget,
     zNear,
     zFar,
+    range,
+    radius,
+    escala,
+    extents,
+    textures,
+    novaTextura,
   };
 }
 
 function drawObj(gl) {
   function render(time) {
     if (objDataScene.length != 0) {
-      time *= 0;
+      time *= 0.0001;
       twgl.resizeCanvasToDisplaySize(gl.canvas);
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
       gl.enable(gl.DEPTH_TEST);
@@ -131,7 +201,28 @@ function drawObj(gl) {
 
       const fieldOfViewRadians = degToRad(60);
       const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+
       for (const objectOnScene of objDataScene) {
+        objectOnScene.textures = {
+          defaultWhite: twgl.createTexture(gl, { src: [255, 255, 255, 255] }),
+        };
+        objectOnScene.novaTextura = twgl.createTexture(gl, {
+          src: novaTexturaP,
+          flipY: true,
+        });
+        objectOnScene.textures["texture1.png"] = objectOnScene.novaTextura; //textura 1 está em
+        // console.log(" TEXTURES NO DRAW: ", objectOnScene.textures);
+
+        const cameraTarget = [0, 0, 0];
+        const radius = m4.length(objectOnScene.range) * objectOnScene.escala;
+        objectOnScene.cameraPosition = m4.addVectors(cameraTarget, [
+          0,
+          0,
+          radius,
+        ]);
+        objectOnScene.zNear = radius / 100;
+        objectOnScene.zFar = radius * 3;
+
         const projection = m4.perspective(
           fieldOfViewRadians,
           aspect,
@@ -157,10 +248,13 @@ function drawObj(gl) {
         gl.useProgram(meshProgramInfo.program);
         twgl.setUniforms(meshProgramInfo, sharedUniforms);
 
-        let u_world = m4.yRotation(objectOnScene.yrotation ? objectOnScene.yrotation : time);
-        u_world = m4.translate(u_world, ...objectOnScene.objOffset);
-        for (const { bufferInfo, vao, material } of objectOnScene.parts) {
+        let u_world = m4.yRotation(
+          objectOnScene.yrotation ? objectOnScene.yrotation : time
+        );
 
+        u_world = m4.translate(u_world, ...objectOnScene.objOffset);
+
+        for (const { bufferInfo, vao, material } of objectOnScene.parts) {
           gl.bindVertexArray(vao);
           twgl.setUniforms(
             meshProgramInfo,
@@ -181,37 +275,65 @@ function drawObj(gl) {
   requestAnimationFrame(render);
 }
 
-export async function renderSelect(title, index) {
-  objectsOnScene.push({ objAddress: objAddresses[index] });
-  
-  for (let i = 0; i < objectsOnScene.length; i++) {
-    const objData = await loadObj(gl, objectsOnScene[i].objAddress);
-    objectsOnScene[i].objData = objData;
-    console.log("OBJ DATA>>>>>>>>>>> ", objData);
-    countObj = i + 1;
-  }
-  callObjData();
+export async function transformationEditing(buttonIndex) {
+  let inputRotation = document.getElementById("rotation");
+  let inputScale = document.getElementById("scale");
+  let inputTranslationX = document.getElementById("translateXButton");
+  let inputTranslationY = document.getElementById("translateYButton");
+  let inputTranslationZ = document.getElementById("translateZButton");
+  let alterTexture = document.getElementById("alterTexture");
+
+  inputRotation.onchange = function () {
+    objDataScene[buttonIndex].yrotation = inputRotation.value;
+  };
+
+  inputScale.onchange = function () {
+    objDataScene[buttonIndex].escala = parseFloat(inputScale.value);
+    console.log(" A NOVA ESCALA É: ", parseFloat(inputScale.value));
+  };
+
+  inputTranslationX.onchange = function () {
+    objDataScene[buttonIndex].objOffset[0] = parseFloat(
+      inputTranslationX.value
+    );
+  };
+
+  inputTranslationY.onchange = function () {
+    objDataScene[buttonIndex].objOffset[1] = parseFloat(
+      inputTranslationY.value
+    );
+  };
+
+  inputTranslationZ.onchange = function () {
+    objDataScene[buttonIndex].objOffset[2] = parseFloat(
+      inputTranslationZ.value
+    );
+  };
+
+  alterTexture.onclick = function () {
+    objDataScene[buttonIndex].textures;
+    console.log(" TEXTURES NO ALTER: ", objDataScene[buttonIndex].textures);
+  };
 }
 
-async function callObjData() {
-  objDataScene = objectsOnScene.map((obj) => {
-    return obj.objData;
-  });
-  console.log("VAPO VAPO", objDataScene);
-}
+export async function saveCanvas(canvas, data, filename) {
+  const canvasData = canvas.toDataURL();
+  const jsonData = JSON.stringify(data);
+  const combinetData = { canvasData, jsonData };
+  console.log("save canvas");
 
-export async function clearCanvas(gl) {
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  console.log("LIMPOU O CANVAS");
+  const json = JSON.stringify(data);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  console.log("dowload canvas");
 }
 
 await drawObj(gl);
-
-export async function transformationEditing(buttonIndex) {
-  let input = document.getElementById("rotation");
-  console.log("ObjDataScene: ", objDataScene, "Index: ", buttonIndex);
-  input.onchange = function () {
-    console.log(input.value);
-    objDataScene[buttonIndex].yrotation = input.value;
-  }
-}
