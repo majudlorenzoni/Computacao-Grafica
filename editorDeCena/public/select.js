@@ -4,6 +4,7 @@ import {
   transformationEditing,
 } from "./renderSelect.js";
 
+
 document.addEventListener("DOMContentLoaded", async function () {
   const boxes = document.querySelectorAll(".box-models li");
   const buttonContainer = document.querySelector(".buttonContainer");
@@ -26,6 +27,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         "Mesa",
         "Chão",
         "Chave",
+        "Vela",
+        "Chão Madeira",
+        "Escada",
       ];
       const title = titles[index];
       renderSelect(index); // Chama renderSelect com o índice do modelo selecionado
@@ -46,3 +50,4 @@ document.addEventListener("DOMContentLoaded", async function () {
     };
   });
 });
+

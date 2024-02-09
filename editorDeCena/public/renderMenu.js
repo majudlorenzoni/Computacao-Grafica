@@ -9,6 +9,9 @@ let idCanvas = [
   "canvas5",
   "canvas6",
   "canvas7",
+  "canvas8",
+  "canvas9",
+  "canvas10"
 ];
 
 let objAddresses = [
@@ -19,6 +22,9 @@ let objAddresses = [
   { path: "/obj/table_long_decorated_A/table_long_decorated_A.obj"},
   { path: "/obj/floor_foundation_corner/floor_foundation_corner.obj"},
   { path: "/obj/key/key.obj"},
+  { path: "/obj/candle_triple/candle_triple.obj"},
+  { path: "/obj/floor_wood_small/floor_wood_small.obj"},
+  { path: "/obj/stairs_narrow/stairs_narrow.obj"}
 ];
 
 async function loadObj(gl, objAddress) {
