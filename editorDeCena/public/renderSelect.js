@@ -92,70 +92,6 @@ let objOffsetXCarregada;
 let objOffsetYCarregada;
 let objOffsetZCarregada;
 
-const saveButton = document.getElementById("btnSalvar");
-saveButton.addEventListener("click", function () {
-  let sceneData = objectsOnScene.map((obj) => {
-    return obj.objData;
-  });
-  const data = JSON.stringify(sceneData);
-  const blob = new Blob([data], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "scene.json";
-  document.body.appendChild(a);
-  a.click();
-});
-
-const loadButton = document.getElementById("btnCarregar");
-loadButton.addEventListener("click", function () {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "application/json";
-
-  input.onchange = function (event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = async function () {
-      const jsonData = JSON.parse(reader.result);
-      carregando = true;
-      for (let i = 0; i < jsonData.length; i++) {
-        const objAddress = jsonData[i];
-        objectsOnScene.push({ objData: objAddress });
-        const objData = await loadObj(gl, objAddress.indexAdress);
-        objectsOnScene[objectsOnScene.length - 1].objData = objData;
-
-        callObjData(objAddress);
-        escalaCarregada = objAddress.escala;
-        yrotationCarregada = objAddress.yrotation;
-        objOffsetXCarregada = objAddress.objOffset[0];
-        objOffsetYCarregada = objAddress.objOffset[1];
-        objOffsetZCarregada = objAddress.objOffset[2];
-      }
-      carregando = false;
-    };
-
-    reader.readAsText(file);
-  };
-
-  input.click();
-});
-
-// LIMPAR CENA
-export async function clearCanvas(gl) {
-  gl.clear(gl.DEPTH_BUFFER_BIT);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  gl.clearColor(0, 0, 0, 0);
-  objDataScene = [];
-  objectsOnScene = [];
-}
-
-async function callObjData() {
-  objDataScene = objectsOnScene.map((obj) => {
-    return obj.objData;
-  });
-}
 
 export async function renderSelect(index) {
   objectsOnScene.push({ objAddress: objAddresses[index] });
@@ -165,6 +101,12 @@ export async function renderSelect(index) {
   );
   objectsOnScene[objectsOnScene.length - 1].objData = objData;
   callObjData();
+}
+
+async function callObjData() {
+  objDataScene = objectsOnScene.map((obj) => {
+    return obj.objData;
+  });
 }
 
 async function loadTexture(gl, objAddress, urlTexture) {
@@ -285,7 +227,6 @@ async function loadObj(gl, objAddress) {
 async function drawObj(gl) {
   async function render(time) {
     if (objDataScene.length != 0) {
-      console.log("OBJ DATA SCENE: ", objDataScene);
       time *= 0;
       twgl.resizeCanvasToDisplaySize(gl.canvas);
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -298,13 +239,11 @@ async function drawObj(gl) {
       const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 
       for (const objectOnScene of objDataScene) {
-        console.log("OBJETO EM CENA ANTES DO IF: ", objectOnScene);
         if(carregando === true){
           objectOnScene.escala = escalaCarregada;
           objectOnScene.yrotation = yrotationCarregada;
           objectOnScene.objOffset = [objOffsetXCarregada, objOffsetYCarregada, objOffsetZCarregada];
         }
-        console.log("OBJETO EM CENA DEPOIS DO IF: ", objectOnScene);
 
         const cameraTarget = [0, 0, 0];
         const radius = m4.length(objectOnScene.range) * objectOnScene.escala;
@@ -428,6 +367,65 @@ export async function transformationEditing(buttonIndex) {
       objDataScene[buttonIndex].texturesAddresses[2].path
     );
   };
+}
+
+const saveButton = document.getElementById("btnSalvar");
+saveButton.addEventListener("click", function () {
+  let sceneData = objectsOnScene.map((obj) => {
+    return obj.objData;
+  });
+  const data = JSON.stringify(sceneData);
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "scene.json";
+  document.body.appendChild(a);
+  a.click();
+});
+
+const loadButton = document.getElementById("btnCarregar");
+loadButton.addEventListener("click", function () {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "application/json";
+
+  input.onchange = function (event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = async function () {
+      const jsonData = JSON.parse(reader.result);
+      carregando = true;
+      for (let i = 0; i < jsonData.length; i++) {
+        const objAddress = jsonData[i];
+        objectsOnScene.push({ objData: objAddress });
+        const objData = await loadObj(gl, objAddress.indexAdress);
+        objectsOnScene[objectsOnScene.length - 1].objData = objData;
+
+        callObjData(objAddress);
+        escalaCarregada = objAddress.escala;
+        yrotationCarregada = objAddress.yrotation;
+        objOffsetXCarregada = objAddress.objOffset[0];
+        objOffsetYCarregada = objAddress.objOffset[1];
+        objOffsetZCarregada = objAddress.objOffset[2];
+      }
+      carregando = false;
+    };
+
+    reader.readAsText(file);
+  };
+
+  input.click();
+});
+
+// LIMPAR CENA
+export async function clearCanvas(gl) {
+  gl.clear(gl.DEPTH_BUFFER_BIT);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.clearColor(0, 0, 0, 0);
+  objDataScene = [];
+  objectsOnScene = [];
 }
 
 await drawObj(gl);

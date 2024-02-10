@@ -81,6 +81,7 @@ canvas {
   background-color: #21025c;
 }
 
+
 #buttonContainer {
   display: flex;
   flex-direction: column;
@@ -111,6 +112,7 @@ canvas {
 #buttonContainer button:hover {
   background-color: #21025c;
 }
+
 
 #left_menu .model_selection::-webkit-scrollbar {
   width: 10px;

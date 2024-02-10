@@ -1,5 +1,5 @@
 import { parseOBJ, parseMTL, vs, fs } from "./read.js";
-import { degToRad, getExtents, getGeometriesExtents } from "./read.js";
+import { degToRad, getGeometriesExtents } from "./read.js";
 
 let idCanvas = [
   "canvas1",
@@ -26,6 +26,16 @@ let objAddresses = [
   { path: "/obj/floor_wood_small/floor_wood_small.obj"},
   { path: "/obj/stairs_narrow/stairs_narrow.obj"}
 ];
+
+async function renderMenu() {
+  for(let i = 0; i < Math.min(idCanvas.length, objAddresses.length); i++) {
+    let canvas = document.getElementById(idCanvas[i]);
+    let gl = canvas.getContext("webgl2");
+    let objAddress = objAddresses[i];
+    const objData = await loadObj(gl, objAddress);
+    drawObj(gl, objData);
+  }
+}
 
 async function loadObj(gl, objAddress) {
   const meshProgramInfo = twgl.createProgramInfo(gl, [vs, fs]);
@@ -113,12 +123,8 @@ async function loadObj(gl, objAddress) {
     -1
   );
   const cameraTarget = [0, 0, 0];
-  // figure out how far away to move the camera so we can likely
-  // see the object.
   const radius = m4.length(range) * 1.2;
   const cameraPosition = m4.addVectors(cameraTarget, [0, 0, radius]);
-  // Set zNear and zFar to something hopefully appropriate
-  // for the size of this object.
   const zNear = radius / 100;
   const zFar = radius * 3;
 
@@ -132,6 +138,9 @@ function drawObj(gl, { parts, meshProgramInfo, objOffset, cameraPosition, camera
     twgl.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     gl.enable(gl.DEPTH_TEST);
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clearColor(0, 0, 0, 0);
 
     const fieldOfViewRadians = degToRad(60);
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -159,11 +168,9 @@ function drawObj(gl, { parts, meshProgramInfo, objOffset, cameraPosition, camera
     let u_world = m4.yRotation(time);
     u_world = m4.translate(u_world, ...objOffset);
 
-    for (const { bufferInfo, vao, material, scale } of parts) {
+    for (const { bufferInfo, vao, material } of parts) {
    
-      // set the attributes for this part.
       gl.bindVertexArray(vao);
-      // calls gl.uniform
       twgl.setUniforms(
         meshProgramInfo,
         {
@@ -171,7 +178,6 @@ function drawObj(gl, { parts, meshProgramInfo, objOffset, cameraPosition, camera
         },
         material
       );
-      // calls gl.drawArrays or gl.drawElements
       twgl.drawBufferInfo(gl, bufferInfo);
     }
     requestAnimationFrame(render);
@@ -179,18 +185,5 @@ function drawObj(gl, { parts, meshProgramInfo, objOffset, cameraPosition, camera
   requestAnimationFrame(render);
 }
 
-export async function renderMenu() {
-  for(let i = 0; i < Math.min(idCanvas.length, objAddresses.length); i++) {
-    let canvas = document.getElementById(idCanvas[i]);
-    let gl = canvas.getContext("webgl2");
-    if (!gl) {
-      alert("No se pudo inicializar WebGL 2.0. Tu navegador o máquina puede no soportarlo.");
-      return;
-    }
-    let objAddress = objAddresses[i];
-    const objData = await loadObj(gl, objAddress);
-    drawObj(gl, objData);
-  }
-}
-
 renderMenu();
+

@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   clearButton.addEventListener("click", function () {
     const gl = document.getElementById("canvasScene").getContext("webgl2");
     clearCanvas(gl);
+    document.getElementById("buttonContainer").innerHTML = "";
   });
 
   let buttonCount = 0;
@@ -36,6 +37,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       const newButton = document.createElement("button");
       newButton.textContent = title;
+      
       const buttonIndex = buttonCount;
       buttonCount++;
 
