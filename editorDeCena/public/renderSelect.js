@@ -64,34 +64,38 @@ let objAddresses = [
       { path: "textura3.png" },
     ],
   },
-  { path: "/obj/candle_triple/candle_triple.obj",
+  {
+    path: "/obj/candle_triple/candle_triple.obj",
     textures: [
       { path: "textura1.png" },
       { path: "textura2.png" },
       { path: "textura3.png" },
-    ]},
-  { path: "/obj/floor_wood_small/floor_wood_small.obj",
+    ],
+  },
+  {
+    path: "/obj/floor_wood_small/floor_wood_small.obj",
     textures: [
       { path: "textura1.png" },
       { path: "textura2.png" },
       { path: "textura3.png" },
-    ]},
-  { path: "/obj/stairs_narrow/stairs_narrow.obj",
+    ],
+  },
+  {
+    path: "/obj/stairs_narrow/stairs_narrow.obj",
     textures: [
       { path: "textura1.png" },
       { path: "textura2.png" },
       { path: "textura3.png" },
-    ]
+    ],
   },
 ];
 
 let carregando = false;
-let escalaCarregada ;
+let escalaCarregada;
 let yrotationCarregada;
 let objOffsetXCarregada;
 let objOffsetYCarregada;
 let objOffsetZCarregada;
-
 
 export async function renderSelect(index) {
   objectsOnScene.push({ objAddress: objAddresses[index] });
@@ -115,7 +119,6 @@ async function loadTexture(gl, objAddress, urlTexture) {
   const text = await response.text();
   const obj = parseOBJ(text);
 
-  // COMEÇA AQUI A FUNÇÃO
   const baseHref = new URL(objHref, window.location.href);
   const matTexts = await Promise.all(
     obj.materialLibs.map(async (filename) => {
@@ -207,6 +210,8 @@ async function loadObj(gl, objAddress) {
   const zNear = radius / 100;
   const zFar = radius * 3;
 
+  let u_lightDirection = m4.normalize([-1, 3, 5]);
+
   return {
     parts,
     meshProgramInfo,
@@ -221,6 +226,7 @@ async function loadObj(gl, objAddress) {
     extents,
     texturesAddresses: objAddress.textures,
     indexAdress: objAddress,
+    u_lightDirection,
   };
 }
 
@@ -239,15 +245,19 @@ async function drawObj(gl) {
       const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 
       for (const objectOnScene of objDataScene) {
-        if(carregando === true){
+        if (carregando === true) {
           objectOnScene.escala = escalaCarregada;
           objectOnScene.yrotation = yrotationCarregada;
-          objectOnScene.objOffset = [objOffsetXCarregada, objOffsetYCarregada, objOffsetZCarregada];
+          objectOnScene.objOffset = [
+            objOffsetXCarregada,
+            objOffsetYCarregada,
+            objOffsetZCarregada,
+          ];
         }
 
         const cameraTarget = [0, 0, 0];
         const radius = m4.length(objectOnScene.range) * objectOnScene.escala;
-        
+
         objectOnScene.cameraPosition = m4.addVectors(cameraTarget, [
           0,
           0,
@@ -271,8 +281,8 @@ async function drawObj(gl) {
         );
         const view = m4.inverse(camera);
 
-        const sharedUniforms = {
-          u_lightDirection: m4.normalize([-1, 3, 5]),
+        let sharedUniforms = {
+          u_lightDirection: objectOnScene.u_lightDirection,
           u_view: view,
           u_projection: projection,
           u_viewWorldPosition: objectOnScene.cameraPosition,
@@ -317,6 +327,10 @@ export async function transformationEditing(buttonIndex) {
   let defaultTextura1Btn = document.getElementById("defaultTextura1Btn");
   let defaultTextura2Btn = document.getElementById("defaultTextura2Btn");
   let defaultTextura3Btn = document.getElementById("defaultTextura3Btn");
+
+  let inputLightDirectionX = document.getElementById("lightDirectionX");
+  let inputLightDirectionY = document.getElementById("lightDirectionY");
+  let inputLightDirectionZ = document.getElementById("lightDirectionZ");
 
   inputRotation.onchange = function () {
     objDataScene[buttonIndex].yrotation = inputRotation.value;
@@ -365,6 +379,24 @@ export async function transformationEditing(buttonIndex) {
       gl,
       objDataScene[buttonIndex].indexAdress,
       objDataScene[buttonIndex].texturesAddresses[2].path
+    );
+  };
+
+  inputLightDirectionX.onchange = async function () {
+    objDataScene[buttonIndex].u_lightDirection[0] = parseFloat(
+      inputLightDirectionX.value
+    );
+  };
+
+  inputLightDirectionY.onchange = async function () {
+    objDataScene[buttonIndex].u_lightDirection[1] = parseFloat(
+      inputLightDirectionY.value
+    );
+  };
+
+  inputLightDirectionZ.onchange = async function () {
+    objDataScene[buttonIndex].u_lightDirection[2] = parseFloat(
+      inputLightDirectionZ.value
     );
   };
 }

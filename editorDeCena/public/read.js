@@ -265,13 +265,13 @@ in vec4 v_color;
 
 uniform vec3 diffuse;
 uniform sampler2D diffuseMap;
-uniform vec3 ambient;
+uniform vec3 ambient; 
 uniform vec3 emissive;
 uniform vec3 specular;
-uniform float shininess;
+uniform float shininess; 
 uniform float opacity;
-uniform vec3 u_lightDirection;
-uniform vec3 u_ambientLight;
+uniform vec3 u_lightDirection; // direção a luz
+uniform vec3 u_ambientLight; // luz ambiente
 
 out vec4 outColor;
 

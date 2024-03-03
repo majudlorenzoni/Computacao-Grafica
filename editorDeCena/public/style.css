@@ -113,7 +113,6 @@ canvas {
   background-color: #21025c;
 }
 
-
 #left_menu .model_selection::-webkit-scrollbar {
   width: 10px;
 }
@@ -140,11 +139,35 @@ canvas {
   padding: 8px 30px;
   box-sizing: border-box;
   height: 400px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.transformation_editing::-webkit-scrollbar {
+  width: 10px;
+}
+.transformation_editing::-webkit-scrollbar-track {
+  background: #f0e8ff;
+}
+.transformation_editing::-webkit-scrollbar-thumb {
+  background: #21025c;
+  border-radius: 50px;
 }
 
 .bottonTXYZ {
   display: flex;
   gap: 5px;
+}
+
+
+.bottonLight input {
+  width: 100%;
+  margin: 10px auto;
+  background: #e6d9ff;
+  border-radius: 10px; /* Adiciona bordas arredondadas */
+  font-size: 14px; /* Aumenta o tamanho da fonte */
+  font-family: "MedievalSharp", cursive; /* Altera a fonte do texto */
+  padding: 5px; /* Adiciona um pequeno espaço interno entre o texto e a borda */
 }
 
 .transformation_editing label {
