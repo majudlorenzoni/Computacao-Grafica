@@ -2,7 +2,7 @@
 
 Repositório criado para a disciplina de Computação Gráfica na UFPel.
 
-## Conteúdo
+### Conteúdo
 
 Na pasta **triangulo** encontra-se um exercício de um triângulo multicolorido.
 
@@ -10,7 +10,13 @@ Na pasta **textura** encontra-se exercícios para aprender a aplicação de text
 
 Na pasta **editorDeCena** encontra-se o código do primeiro trabalho.
 
-## COMO USAR
+### Editor de Cena
+Este é um editor de cena 3D desenvolvido como parte dos trabalhos requisitados na disciplina. 
+O editor permite carregar modelos 3D, ajustar suas posições, escalas e rotações, adicionar luzes e texturas, e visualizar a cena renderizada em tempo real.
+A aplicação é desenvolvida utilizando as seguintes tecnologias: WebGL, JavaScript, HTML e CSS.
+
+(editorDeCena/EditorCena.png)
+### Instalação
 
 1° - Baixe o repositório do projeto.
 
@@ -36,3 +42,5 @@ Isso instalará todas as dependências listadas no arquivo package.json do proje
  ```bash
 http-server
 ```
+### Agradecimentos
+Agradecimentos especiais a Rafael Piccin Torchelsen por todo suporte.
