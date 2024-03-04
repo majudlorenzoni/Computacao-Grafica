@@ -15,7 +15,7 @@ Este é um editor de cena 3D desenvolvido como parte dos trabalhos requisitados 
 O editor permite carregar modelos 3D, ajustar suas posições, escalas e rotações, adicionar luzes e texturas, e visualizar a cena renderizada em tempo real.
 A aplicação é desenvolvida utilizando as seguintes tecnologias: WebGL, JavaScript, HTML e CSS.
 
-(editorDeCena/EditorCena.png)
+![Imagem do Editor de Cena funcionando](editorDeCena/EditorCena.png)
 ### Instalação
 
 1° - Baixe o repositório do projeto.
