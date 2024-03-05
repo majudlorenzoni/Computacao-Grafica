@@ -90,6 +90,7 @@ let objAddresses = [
   },
 ];
 
+let lights = [];
 let carregando = false;
 let escalaCarregada;
 let yrotationCarregada;
@@ -210,7 +211,9 @@ async function loadObj(gl, objAddress) {
   const zNear = radius / 100;
   const zFar = radius * 3;
 
-  let u_lightDirection = m4.normalize([-1, 3, 5]);
+  let u_lightDirection = m4.normalize([-1, 3, 5]); //luz original
+  let allLightsDirection = [u_lightDirection];
+  console.log("allLightsDirection: ", allLightsDirection);
 
   return {
     parts,
@@ -227,6 +230,7 @@ async function loadObj(gl, objAddress) {
     texturesAddresses: objAddress.textures,
     indexAdress: objAddress,
     u_lightDirection,
+    allLightsDirection,
   };
 }
 
@@ -280,13 +284,18 @@ async function drawObj(gl) {
           up
         );
         const view = m4.inverse(camera);
-
+        
         let sharedUniforms = {
           u_lightDirection: objectOnScene.u_lightDirection,
           u_view: view,
           u_projection: projection,
           u_viewWorldPosition: objectOnScene.cameraPosition,
         };
+
+        console.log(
+          "allLightsDirection RENDER: ",
+          objectOnScene.allLightsDirection
+        );
 
         gl.useProgram(meshProgramInfo.program);
         twgl.setUniforms(meshProgramInfo, sharedUniforms);
@@ -318,12 +327,16 @@ async function drawObj(gl) {
   requestAnimationFrame(render);
 }
 
+
+
 export async function transformationEditing(buttonIndex) {
   let inputRotation = document.getElementById("rotation");
   let inputScale = document.getElementById("scale");
+
   let inputTranslationX = document.getElementById("translateXButton");
   let inputTranslationY = document.getElementById("translateYButton");
   let inputTranslationZ = document.getElementById("translateZButton");
+
   let defaultTextura1Btn = document.getElementById("defaultTextura1Btn");
   let defaultTextura2Btn = document.getElementById("defaultTextura2Btn");
   let defaultTextura3Btn = document.getElementById("defaultTextura3Btn");
@@ -331,6 +344,14 @@ export async function transformationEditing(buttonIndex) {
   let inputLightDirectionX = document.getElementById("lightDirectionX");
   let inputLightDirectionY = document.getElementById("lightDirectionY");
   let inputLightDirectionZ = document.getElementById("lightDirectionZ");
+
+  let lightADDX = document.getElementById("lightADDX");
+  let lightADDY = document.getElementById("lightADDY");
+  let lightADDZ = document.getElementById("lightADDZ");
+
+  let addLightButton = document.getElementById("addLightButton");
+  let lightForm = document.getElementById("lightForm");
+  let confirmLightButton = document.getElementById("confirmLightButton");
 
   inputRotation.onchange = function () {
     objDataScene[buttonIndex].yrotation = inputRotation.value;
@@ -398,6 +419,31 @@ export async function transformationEditing(buttonIndex) {
     objDataScene[buttonIndex].u_lightDirection[2] = parseFloat(
       inputLightDirectionZ.value
     );
+  };
+
+  addLightButton.onclick = async function () {
+    lightForm.style.display = "block"; // Exibe o formulário
+  };
+
+  confirmLightButton.onclick = function () {
+    console.log(
+      " ANTES LUZ adicionada: ",
+      objDataScene[buttonIndex].allLightsDirection
+    );
+    const newLightDirection = m4.normalize([
+      parseFloat(lightADDX.value),
+      parseFloat(lightADDY.value),
+      parseFloat(lightADDZ.value),
+    ]);
+    lights.push(newLightDirection);
+    console.log("LIGHTS: ", lights);
+    objDataScene[buttonIndex].allLightsDirection.push(newLightDirection);
+    console.log(
+      " LUZ adicionada: ",
+      objDataScene[buttonIndex].allLightsDirection
+    );
+
+    lightForm.style.display = "none";
   };
 }
 

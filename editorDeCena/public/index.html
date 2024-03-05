@@ -59,14 +59,25 @@
                 
                 <label for="lightDirectionZ">Direção da Luz - Eixo  Z:</label>
                 <input id="lightDirectionZ" type="number" step="0.1" value="5" />
-                
+              <div></div>
+
               <label for="texture">Textura</label>
               <div class="images-texture">
                 <button id="defaultTextura1Btn"></button>
                 <button id="defaultTextura2Btn"> </button>
                 <button id="defaultTextura3Btn"></button>
               </div>
-              <div>
+
+              <button id="addLightButton">Adicionar Luz</button>
+                <div id="lightForm" style="display: none;">
+                  <label for="lightADDX">Direção X:</label>
+                  <input type="number" id="lightADDX" step="0.1"  value="0.3">
+                  <label for="lightADDY">Direção Y:</label>
+                  <input type="number" id="lightADDY" step="0.1" value="4">
+                  <label for="lightADDZ">Direção Z:</label>
+                  <input type="number" id="lightADDZ" step="0.1" value="5">
+                  <button id="confirmLightButton">Confirmar</button>
+                </div>
             </div>
         </section> 
         

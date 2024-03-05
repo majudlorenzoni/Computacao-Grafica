@@ -161,14 +161,53 @@ canvas {
 
 
 .bottonLight input {
-  width: 100%;
+  width: 94%;
   margin: 10px auto;
   background: #e6d9ff;
   border-radius: 10px; /* Adiciona bordas arredondadas */
   font-size: 14px; /* Aumenta o tamanho da fonte */
   font-family: "MedievalSharp", cursive; /* Altera a fonte do texto */
+  font-weight: bold;
   padding: 5px; /* Adiciona um pequeno espaço interno entre o texto e a borda */
 }
+
+#addLightButton {
+  padding: 12px 20px; /* Espaçamento interno */
+  font-size: 16px; /* Aumenta o tamanho da fonte */
+  font-family: "MedievalSharp", cursive; /* Altera a fonte do texto */
+  font-weight: bold;
+  background-color: #e6d9ff; /* Cor de fundo */
+  color: #21025c; /* Cor do texto */
+  border: none;
+  border-radius: 5px; /* Arredondar cantos */
+  cursor: pointer; /* Mostrar cursor de mão ao passar por cima */
+  margin-bottom: 5px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+#addLightButton:hover {
+  background-color:#ceb4ff; /* Cor de fundo ao passar o mouse */
+}
+
+#confirmLightButton {
+  padding: 12px 20px; /* Espaçamento interno */
+  font-size: 16px; /* Aumenta o tamanho da fonte */
+  font-family: "MedievalSharp", cursive; /* Altera a fonte do texto */
+  font-weight: bold;
+  background-color: #e6d9ff; /* Cor de fundo */
+  color: #21025c; /* Cor do texto */
+  border: none;
+  border-radius: 5px; /* Arredondar cantos */
+  cursor: pointer; /* Mostrar cursor de mão ao passar por cima */
+  margin-bottom: 5px;
+  margin-top: 1px;
+  width: 100%;
+}
+#confirmLightButton:hover {
+  background-color:#ceb4ff; /* Cor de fundo ao passar o mouse */
+}
+
 
 .transformation_editing label {
   display: block;

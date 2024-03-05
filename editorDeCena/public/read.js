@@ -255,6 +255,7 @@ void main() {
 }
 `;
 
+
 export const fs = `#version 300 es
 precision highp float;
 
