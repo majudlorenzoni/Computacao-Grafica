@@ -156,10 +156,11 @@ function drawObj(gl, { parts, meshProgramInfo, objOffset, cameraPosition, camera
     const view = m4.inverse(camera);
 
     const sharedUniforms = {
-      u_lightDirection: m4.normalize([-1, 3, 5]),
+      u_lightDirections: m4.normalize([-1, 3, 5]),
       u_view: view,
       u_projection: projection,
       u_viewWorldPosition: cameraPosition,
+      u_lightStates: [1],
     };
 
     gl.useProgram(meshProgramInfo.program);

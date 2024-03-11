@@ -1,9 +1,14 @@
-import { parseOBJ, parseMTL, vs, fs } from "./read.js";
+import { parseOBJ, parseMTL, vs, fs, vsToon, fsToon} from "./read.js";
 import { degToRad, getGeometriesExtents } from "./read.js";
 
 let canvas = document.getElementById("canvasScene");
 let gl = canvas.getContext("webgl2");
 const meshProgramInfo = twgl.createProgramInfo(gl, [vs, fs]);
+console.log("meshProgramInfo: ", meshProgramInfo)
+const toonProgram = twgl.createProgramInfo(gl, [vsToon, fsToon]);
+let currentProgram = meshProgramInfo;
+console.log("toonProgram: ", toonProgram);
+
 let objDataScene = [];
 let objectsOnScene = [];
 let objAddresses = [
@@ -175,7 +180,7 @@ async function loadTexture(gl, objAddress, urlTexture) {
     }
 
     const bufferInfo = twgl.createBufferInfoFromArrays(gl, data);
-    const vao = twgl.createVAOFromBufferInfo(gl, meshProgramInfo, bufferInfo);
+    const vao = twgl.createVAOFromBufferInfo(gl, currentProgram, bufferInfo);
     return {
       material: {
         ...defaultMaterial,
@@ -211,13 +216,12 @@ async function loadObj(gl, objAddress) {
   const zNear = radius / 100;
   const zFar = radius * 3;
 
-  let u_lightDirection = m4.normalize([-1, 3, 5]); //luz original
-  let allLightsDirection = [u_lightDirection];
-  console.log("allLightsDirection: ", allLightsDirection);
+  let u_lightDirections = [m4.normalize([-1, 3, 5])
+];
 
   return {
     parts,
-    meshProgramInfo,
+    currentProgram,
     objOffset,
     cameraPosition,
     cameraTarget,
@@ -229,8 +233,7 @@ async function loadObj(gl, objAddress) {
     extents,
     texturesAddresses: objAddress.textures,
     indexAdress: objAddress,
-    u_lightDirection,
-    allLightsDirection,
+    u_lightDirections,
   };
 }
 
@@ -284,42 +287,43 @@ async function drawObj(gl) {
           up
         );
         const view = m4.inverse(camera);
-        
+
         let sharedUniforms = {
-          u_lightDirection: objectOnScene.u_lightDirection,
+          u_lightDirections: objectOnScene.u_lightDirections,
           u_view: view,
           u_projection: projection,
           u_viewWorldPosition: objectOnScene.cameraPosition,
+          u_lightStates: [],
         };
 
-        console.log(
-          "allLightsDirection RENDER: ",
-          objectOnScene.allLightsDirection
-        );
+        for (let i = 0; i < objectOnScene.u_lightDirections.length; i++) {
+          
+          sharedUniforms.u_lightStates.push(1);
 
-        gl.useProgram(meshProgramInfo.program);
-        twgl.setUniforms(meshProgramInfo, sharedUniforms);
+          gl.useProgram(currentProgram.program);
+          twgl.setUniforms(currentProgram, sharedUniforms);
 
-        let u_world = m4.yRotation(
-          objectOnScene.yrotation ? objectOnScene.yrotation : time
-        );
-
-        u_world = m4.translate(u_world, ...objectOnScene.objOffset);
-
-        for (const { bufferInfo, vao, material } of objectOnScene.parts) {
-          gl.bindVertexArray(vao);
-          twgl.setUniforms(
-            meshProgramInfo,
-            {
-              u_world,
-            },
-            material
+          let u_world = m4.yRotation(
+            objectOnScene.yrotation ? objectOnScene.yrotation : time
           );
-          twgl.drawBufferInfo(gl, bufferInfo);
-        }
-      }
 
-      requestAnimationFrame(render);
+          u_world = m4.translate(u_world, ...objectOnScene.objOffset);
+
+          for (const { bufferInfo, vao, material } of objectOnScene.parts) {
+            gl.bindVertexArray(vao);
+            twgl.setUniforms(
+              currentProgram,
+              {
+                u_world,
+              },
+              material
+            );
+            twgl.drawBufferInfo(gl, bufferInfo);
+          }
+        }
+
+        requestAnimationFrame(render);
+      }
     } else {
       requestAnimationFrame(render);
     }
@@ -327,9 +331,8 @@ async function drawObj(gl) {
   requestAnimationFrame(render);
 }
 
+export async function transformationEditing(buttonIndex, sharedUniforms) {
 
-
-export async function transformationEditing(buttonIndex) {
   let inputRotation = document.getElementById("rotation");
   let inputScale = document.getElementById("scale");
 
@@ -352,6 +355,18 @@ export async function transformationEditing(buttonIndex) {
   let addLightButton = document.getElementById("addLightButton");
   let lightForm = document.getElementById("lightForm");
   let confirmLightButton = document.getElementById("confirmLightButton");
+
+  let toonShaderButton = document.getElementById("toonShaderButton");
+
+  toonShaderButton.onclick = function () {
+    console.log("currentProgram: ", currentProgram)
+    if (currentProgram === meshProgramInfo) {
+      currentProgram = toonProgram;
+    } else {
+      currentProgram = meshProgramInfo;
+    }
+    console.log("currentProgram: ", currentProgram)
+  };
 
   inputRotation.onchange = function () {
     objDataScene[buttonIndex].yrotation = inputRotation.value;
@@ -404,19 +419,18 @@ export async function transformationEditing(buttonIndex) {
   };
 
   inputLightDirectionX.onchange = async function () {
-    objDataScene[buttonIndex].u_lightDirection[0] = parseFloat(
-      inputLightDirectionX.value
-    );
+    objDataScene[buttonIndex].u_lightDirections[0] = parseFloat( inputLightDirectionX.value);
+    sharedUniforms.u_lightDirections[0] = objDataScene[buttonIndex].u_lightDirections[0];
   };
 
   inputLightDirectionY.onchange = async function () {
-    objDataScene[buttonIndex].u_lightDirection[1] = parseFloat(
+    objDataScene[buttonIndex].u_lightDirections[1] = parseFloat(
       inputLightDirectionY.value
     );
   };
 
   inputLightDirectionZ.onchange = async function () {
-    objDataScene[buttonIndex].u_lightDirection[2] = parseFloat(
+    objDataScene[buttonIndex].u_lightDirections[2] = parseFloat(
       inputLightDirectionZ.value
     );
   };
@@ -426,25 +440,20 @@ export async function transformationEditing(buttonIndex) {
   };
 
   confirmLightButton.onclick = function () {
-    console.log(
-      " ANTES LUZ adicionada: ",
-      objDataScene[buttonIndex].allLightsDirection
-    );
+  
     const newLightDirection = m4.normalize([
       parseFloat(lightADDX.value),
       parseFloat(lightADDY.value),
       parseFloat(lightADDZ.value),
     ]);
-    lights.push(newLightDirection);
-    console.log("LIGHTS: ", lights);
-    objDataScene[buttonIndex].allLightsDirection.push(newLightDirection);
-    console.log(
-      " LUZ adicionada: ",
-      objDataScene[buttonIndex].allLightsDirection
-    );
-
+  
+    objDataScene[buttonIndex].u_lightDirections.push(newLightDirection);
+  
+  
     lightForm.style.display = "none";
   };
+  
+  
 }
 
 const saveButton = document.getElementById("btnSalvar");

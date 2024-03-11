@@ -171,6 +171,26 @@ canvas {
   padding: 5px; /* Adiciona um pequeno espaço interno entre o texto e a borda */
 }
 
+#toonShaderButton {
+  padding: 12px 20px; /* Espaçamento interno */
+  font-size: 16px; /* Tamanho da fonte */
+  font-family: "MedievalSharp", cursive; /* Fonte do texto */
+  font-weight: bold; /* Negrito */
+  background-color: #e6d9ff; /* Cor de fundo */
+  color: #21025c; /* Cor do texto */
+  border: none; /* Sem borda */
+  border-radius: 5px; /* Cantos arredondados */
+  cursor: pointer; /* Cursor de mão ao passar por cima */
+  margin-bottom: 5px; /* Margem inferior */
+  margin-top: 10px; /* Margem superior */
+  width: 100%; /* Largura total */
+}
+
+#toonShaderButton:hover {
+  background-color: #ceb4ff; /* Cor de fundo ao passar o mouse */
+}
+
+
 #addLightButton {
   padding: 12px 20px; /* Espaçamento interno */
   font-size: 16px; /* Aumenta o tamanho da fonte */
